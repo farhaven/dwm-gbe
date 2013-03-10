@@ -526,7 +526,7 @@ clientmessage(XEvent *e) {
 			setfullscreen(c, (cme->data.l[0] == 1 /* _NET_WM_STATE_ADD    */
 			              || (cme->data.l[0] == 2 /* _NET_WM_STATE_TOGGLE */ && !c->isfullscreen)));
 	}
-	else if(cme->message_type == netatom[NetActiveWindow]) {
+	else if(cme->message_type == netatom[NetActiveWindow] && cme->data.l[0] == 2) {
 		if(!ISVISIBLE(c)) {
 			c->mon->seltags ^= 1;
 			c->mon->tagset[c->mon->seltags] = c->tags;
