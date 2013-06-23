@@ -1918,13 +1918,13 @@ updatetitle(Client *c) {
 	if(!gettextprop(c->win, netatom[NetWMName], c->name, sizeof c->name))
 		gettextprop(c->win, XA_WM_NAME, c->name, sizeof c->name);
 	if(c->name[0] == '\0') /* hack to mark broken clients */
-		strcpy(c->name, broken);
+		strlcpy(c->name, broken, sizeof(c->name));
 }
 
 void
 updatestatus(void) {
 	if(!gettextprop(root, XA_WM_NAME, stext, sizeof(stext)))
-		strcpy(stext, "dwm-"VERSION);
+		strlcpy(stext, "dwm-"VERSION, sizeof(stext));
 	drawbar(selmon);
 }
 
