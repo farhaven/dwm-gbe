@@ -54,7 +54,7 @@
 #define WIDTH(X)                ((X)->w + 2 * (X)->bw)
 #define HEIGHT(X)               ((X)->h + 2 * (X)->bw)
 #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
-#define TEXTW(X)                (drw_font_getexts_width(drw->font, X, strlen(X)) + drw->font->h)
+#define TEXTW(X)                (drw_font_getexts_width(drw->dpy, drw->font, X, strlen(X)) + drw->font->h)
 
 #define SYSTEM_TRAY_REQUEST_DOCK    0
 #define _NET_SYSTEM_TRAY_ORIENTATION_HORZ 0
@@ -587,7 +587,7 @@ clientmessage(XEvent *e) {
 			XReparentWindow(dpy, c->win, systray->win, 0, 0);
 			/* use parents background pixmap */
 			swa.background_pixmap = ParentRelative;
-			swa.background_pixel  = scheme[SchemeNorm].bg->rgb;
+			swa.background_pixel  = scheme[SchemeNorm].bg->rgb.pixel;
 			XChangeWindowAttributes(dpy, c->win, CWBackPixmap|CWBackPixel, &swa);
 			sendevent(c->win, netatom[Xembed], StructureNotifyMask, CurrentTime, XEMBED_EMBEDDED_NOTIFY, 0 , systray->win, XEMBED_EMBEDDED_VERSION);
 			/* FIXME not sure if I have to send these events, too */
@@ -882,7 +882,7 @@ focus(Client *c) {
 		detachstack(c);
 		attachstack(c);
 		grabbuttons(c, True);
-		XSetWindowBorder(dpy, c->win, scheme[SchemeSel].border->rgb);
+		XSetWindowBorder(dpy, c->win, scheme[SchemeSel].border->rgb.pixel);
 		setfocus(c);
 	}
 	else {
@@ -1146,7 +1146,7 @@ manage(Window w, XWindowAttributes *wa) {
 
 	wc.border_width = c->bw;
 	XConfigureWindow(dpy, w, CWBorderWidth, &wc);
-	XSetWindowBorder(dpy, w, scheme[SchemeNorm].border->rgb);
+	XSetWindowBorder(dpy, w, scheme[SchemeNorm].border->rgb.pixel);
 	configure(c); /* propagates border_width, if size doesn't change */
 	updatewindowtype(c);
 	updatesizehints(c);
@@ -1662,7 +1662,7 @@ setup(void) {
 	/* init screen */
 	screen = DefaultScreen(dpy);
 	root = RootWindow(dpy, screen);
-	fnt = drw_font_create(dpy, font);
+	fnt = drw_font_create(dpy, screen, font);
 	sw = DisplayWidth(dpy, screen);
 	sh = DisplayHeight(dpy, screen);
 	bh = fnt->h + 2;
@@ -1860,7 +1860,7 @@ unfocus(Client *c, Bool setfocus) {
 	if(!c)
 		return;
 	grabbuttons(c, False);
-	XSetWindowBorder(dpy, c->win, scheme[SchemeNorm].border->rgb);
+	XSetWindowBorder(dpy, c->win, scheme[SchemeNorm].border->rgb.pixel);
 	if(setfocus) {
 		XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
 		XDeleteProperty(dpy, root, netatom[NetActiveWindow]);
@@ -2184,11 +2184,11 @@ updatesystray(void) {
 		/* init systray */
 		if(!(systray = (Systray *)calloc(1, sizeof(Systray))))
 			die("fatal: could not malloc() %u bytes\n", sizeof(Systray));
-		systray->win = XCreateSimpleWindow(dpy, root, x, selmon->by, w, bh, 0, 0, scheme[SchemeSel].bg->rgb);
+		systray->win = XCreateSimpleWindow(dpy, root, x, selmon->by, w, bh, 0, 0, scheme[SchemeSel].bg->rgb.pixel);
 		wa.event_mask        = ButtonPressMask | ExposureMask;
 		wa.override_redirect = True;
 		wa.background_pixmap = ParentRelative;
-		wa.background_pixel  = scheme[SchemeNorm].bg->rgb;
+		wa.background_pixel  = scheme[SchemeNorm].bg->rgb.pixel;
 		XSelectInput(dpy, systray->win, SubstructureNotifyMask);
 		XChangeProperty(dpy, systray->win, netatom[NetSystemTrayOrientation], XA_CARDINAL, 32,
 				PropModeReplace, (unsigned char *)&systrayorientation, 1);
@@ -2218,7 +2218,7 @@ updatesystray(void) {
  	x -= w;
 	XMoveResizeWindow(dpy, systray->win, x, selmon->by, w, bh);
 	/* redraw background */
-	/* XXX
+	/* XXX, take dc from Drw struct
 	XSetForeground(dpy, dc.gc, dc.norm[ColBG].pixel);
 	XFillRectangle(dpy, systray->win, dc.gc, 0, 0, w, bh);
 	*/

@@ -1,7 +1,8 @@
 /* See LICENSE file for copyright and license details. */
+#include <X11/Xft/Xft.h>
 
 typedef struct {
-	unsigned long rgb;
+	XftColor rgb;
 } Clr;
 
 typedef struct {
@@ -12,8 +13,7 @@ typedef struct {
 	int ascent;
 	int descent;
 	unsigned int h;
-	XFontSet set;
-	XFontStruct *xfont;
+	XftFont *xfont;
 } Fnt;
 
 typedef struct {
@@ -44,10 +44,10 @@ void drw_resize(Drw *drw, unsigned int w, unsigned int h);
 void drw_free(Drw *drw);
 
 /* Fnt abstraction */
-Fnt *drw_font_create(Display *dpy, const char *fontname);
+Fnt *drw_font_create(Display *dpy, int screen, const char *fontname);
 void drw_font_free(Display *dpy, Fnt *font);
-void drw_font_getexts(Fnt *font, const char *text, unsigned int len, Extnts *extnts);
-unsigned int drw_font_getexts_width(Fnt *font, const char *text, unsigned int len);
+void drw_font_getexts(Display *dpy, Fnt *font, const char *text, unsigned int len, Extnts *extnts);
+unsigned int drw_font_getexts_width(Display *dpy, Fnt *font, const char *text, unsigned int len);
 
 /* Colour abstraction */
 Clr *drw_clr_create(Drw *drw, const char *clrname);
