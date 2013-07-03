@@ -1543,6 +1543,8 @@ sendmon(Client *c, Monitor *m) {
 	detachstack(c);
 	c->mon = m;
 	c->tags = m->tagset[m->seltags]; /* assign tags of target monitor */
+	if (c->tags == 0)
+		c->tags = ~0;
 	attach(c);
 	attachstack(c);
 	focus(NULL);
