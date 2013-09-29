@@ -3,7 +3,7 @@
 #include "push.c"
 
 /* appearance */
-static const char font[] = "DejaVu Sans Mono:style=Regular:pixelsize=14:antialias=true:autohint=true";
+static const char font[] = "Droid Sans Mono:pixelsize=14";
 static const char normbordercolor[] = "#444";
 static const char normbgcolor[]     = "#222";
 static const char normfgcolor[]     = "#bbb";
@@ -24,11 +24,12 @@ static const Rule rules[] = {
 	/* class      instance       title    tags mask isfloating   monitor */
 	{ "Gimp",     NULL,          NULL,    1 << 6,   False,       -1 },
 	{ "Xmessage", NULL,          NULL,    0,        True,        -1 },
-	{ "mutt",     NULL,          NULL,    1 << 1,   False,       -1 },
+	{ NULL,       "mutt",          NULL,    1 << 1,   False,       -1 },
 	{ "Surf",     NULL,          NULL,    1 << 2,   False,       -1 },
-	{ "UXTerm",   NULL,          NULL,    1 << 3,   False,       -1 },
+	{ NULL,       "surf",        NULL,    1 << 2,   False,       -1 },
+	{ NULL,       "st-256color",  NULL,    1 << 3,   False,       -1 },
 	{ "XConsole", NULL,          NULL,    1 << 3,   False,       -1 },
-	{ "irssi",    NULL,          NULL,    1 << 4,   False,       -1 },
+	{ NULL,       "irssi",       NULL,    1 << 4,   False,       -1 },
    { NULL,       "Pidgin",      NULL,    1 << 4,   False,       -1 },
 	{ "Evince",   NULL,          NULL,    1 << 5,   False,       -1 },
 	{ "Ebook-viewer", NULL,      NULL,    1 << 5,   False,       -1 },
@@ -38,7 +39,8 @@ static const Rule rules[] = {
 	{ "Tkremind", NULL,          NULL,    1 << 7,   False,       -1 },
 	{ "Toplevel", NULL,          NULL,    0,        True,        -1 },
 	{ "Midori",   NULL,          NULL,    1 << 2,   False,       -1 },
-	{ "net-sf-jabref-JabRefMain", NULL, NULL, 1 << 6, False,     -1 }
+	{ "net-sf-jabref-JabRefMain", NULL, NULL, 1 << 6, False,     -1 },
+	{ "Ssvnc",	  NULL,			  NULL,	  1 << 6,	True,			 -1 }
 };
 
 /* layout(s) */
@@ -80,8 +82,9 @@ static Key keys[] = {
 	{ MODKEY,             XK_Left, 	zoom,         	 {0} },
 	{ MODKEY,				 XK_Right,  pushdown,       {0} },
 	{ MODKEY,             XK_r,    	view,           {0} },
-	{ MODKEY,             XK_c,      killclient,     {0} },
-	{ MODKEY,             XK_0,      view,           {.ui = ~0 } },
+	{ MODKEY | ShiftMask, XK_c,      killclient,     {0} },
+	{ MODKEY,             XK_0,      toggleview,     {.ui = ~0 } },
+	{ MODKEY | ShiftMask, XK_0,		toggletag,		 {.ui = ~0 } },
 	{ 0,             		 XF86XK_Back,    focusmon,  {.i = -1 } },
 	{ 0,             		 XF86XK_Forward, focusmon,  {.i = +1 } },
 	{ MODKEY, 		  		 XF86XK_Back,    tagmon,    {.i = -1 } },
