@@ -12,6 +12,7 @@ static const unsigned int borderpx  = 1;        /* border pixel of windows */
 static const unsigned int snap      = 32;       /* snap pixel */
 static const unsigned int systrayspacing = 2;   /* systray spacing */
 static const Bool showsystray       = True;     /* False means no systray */
+static const double shade				= 0.6;      /* Opacity of unfocussed clients */
 static const Bool showbar           = True;     /* False means no bar */
 static const Bool topbar            = True;     /* False means bottom bar */
 
@@ -23,9 +24,9 @@ static const Rule rules[] = {
 	 *	WM_CLASS(STRING) = instance, class
 	 *	WM_NAME(STRING) = title
 	 */
-	/* class      instance    title       tags mask     isfloating   monitor */
-	{ "Gimp",     NULL,       NULL,       0,            True,        -1 },
-	{ "Firefox",  NULL,       NULL,       1 << 8,       False,       -1 },
+	/* class      instance    title       tags mask     isfloating   monitor	opacity */
+	{ "Gimp",     NULL,       NULL,       0,            True,        -1,       -1 },
+	{ "Firefox",  NULL,       NULL,       1 << 8,       False,       -1,       -1 },
 };
 
 /* layout(s) */
