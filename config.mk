@@ -15,12 +15,12 @@ XINERAMALIBS  = -lXinerama
 XINERAMAFLAGS = -DXINERAMA
 
 # includes and libs
-INCS = -I${X11INC}
-LIBS = -L${X11LIB} -lX11 ${XINERAMALIBS}
+INCS = -I${X11INC} `pkg-config --cflags xft pango pangoxft`
+LIBS = -L${X11LIB} -lX11 ${XINERAMALIBS} `pkg-config --libs xft pango pangoxft`
 
 # flags
 CPPFLAGS = -D_BSD_SOURCE -D_POSIX_C_SOURCE=2 -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS}
-#CFLAGS   = -g -std=c99 -pedantic -Wall -O0 ${INCS} ${CPPFLAGS}
+CFLAGS   = -g
 CFLAGS   += -std=c99 -pedantic -Wall -Wno-deprecated-declarations -Os ${INCS} ${CPPFLAGS}
 LDFLAGS  = -s ${LIBS}
 
@@ -30,6 +30,3 @@ LDFLAGS  = -s ${LIBS}
 
 # compiler and linker
 CC = cc
-
-CFLAGS += -I/usr/X11R6/include/freetype2
-LDFLAGS += -lXft

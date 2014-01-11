@@ -1,5 +1,10 @@
 /* See LICENSE file for copyright and license details. */
 #include <X11/Xft/Xft.h>
+#include <pango/pango.h>
+#include <pango/pangoxft.h>
+#include <pango/pango-font.h>
+
+#include <locale.h> /* for setlocale */
 
 typedef struct {
 	XftColor rgb;
@@ -14,6 +19,9 @@ typedef struct {
 	int descent;
 	unsigned int h;
 	XftFont *xfont;
+	PangoLayout *plo;
+	PangoContext *ctx;
+	PangoFontDescription *pfd;
 } Fnt;
 
 typedef struct {
@@ -28,6 +36,7 @@ typedef struct {
 	int screen;
 	Window root;
 	Drawable drawable;
+	XftDraw *xftdrawable;
 	GC gc;
 	ClrScheme *scheme;
 	Fnt *font;
