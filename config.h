@@ -3,7 +3,7 @@
 #include "push.c"
 
 /* appearance */
-static const char font[] = "Droid Sans Mono 10";
+static const char font[] = "Droid Sans Mono 11";
 static const char normbordercolor[] = "#444";
 static const char normbgcolor[]     = "#bbb";
 static const char normfgcolor[]     = "#222";
@@ -20,7 +20,9 @@ static const Bool showbar          = True;     /* False means no bar */
 static const Bool topbar           = True;     /* False means bottom bar */
 
 /* tagging */
-static const char *tags[] = { "1:txt", "2:mail", "3:www", "4:term", "q:comm", "w:doc", "d", "e", "f" };
+static const char *tags[] = {
+	"1:", "2:", "3:", "4:⌨", "q:", "w:", "d", "e", "f"
+};
 static const Rule rules[] = {
 	/* class      instance       title    tags mask isfloating monitor opacity */
 	{ "Gimp",     NULL,          NULL,    1 << 6,   False,     -1,     -1 },
