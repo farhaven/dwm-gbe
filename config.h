@@ -47,6 +47,7 @@ static const Rule rules[] = {
 	{ "Thunderbird", "Mail",     NULL,    1 << 8,   False,     -1,     -1 },
 	{ "Thunderbird", "Calendar", NULL,    0,        True,      -1,     -1 },
 	{ "XConsole",  NULL,         NULL,    1 << 7,   False,     -1,     -1 },
+	{ "MPlayer", NULL, NULL, 1 << 7, False, -1, -1 }
 };
 
 /* layout(s) */
