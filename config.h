@@ -21,7 +21,7 @@ static const Bool topbar           = True;     /* False means bottom bar */
 
 /* tagging */
 static const char *tags[] = {
-	"1:", "2:", "3:", "4:⌨", "q:", "w:", "d", "e", "f"
+	"1:", "2:", "3:", "4:⌨", "q:", "w:", "d:", "e:", "f:"
 };
 static const Rule rules[] = {
 	/* class      instance       title    tags mask isfloating monitor opacity */
