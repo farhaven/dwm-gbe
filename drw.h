@@ -36,7 +36,6 @@ typedef struct {
 	int screen;
 	Window root;
 	Drawable drawable;
-	XftDraw *xftdrawable;
 	GC gc;
 	ClrScheme *scheme;
 	Fnt *font;

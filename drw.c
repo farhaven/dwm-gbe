@@ -19,8 +19,6 @@ drw_create(Display *dpy, int screen, Window root, unsigned int w, unsigned int h
 	drw->w = w;
 	drw->h = h;
 	drw->drawable = XCreatePixmap(dpy, root, w, h, DefaultDepth(dpy, screen));
-	drw->xftdrawable = XftDrawCreate(dpy, drw->drawable,
-			DefaultVisual(dpy, screen), DefaultColormap(dpy, screen));
 	drw->gc = XCreateGC(dpy, root, 0, NULL);
 	XSetLineAttributes(dpy, drw->gc, 1, LineSolid, CapButt, JoinMiter);
 	return drw;
@@ -39,7 +37,6 @@ drw_resize(Drw *drw, unsigned int w, unsigned int h) {
 
 void
 drw_free(Drw *drw) {
-	XftDrawDestroy(drw->xftdrawable);
 	XFreePixmap(drw->dpy, drw->drawable);
 	XFreeGC(drw->dpy, drw->gc);
 	free(drw);
@@ -129,6 +126,7 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, const char *tex
 	char buf[256];
 	int i, tx, ty, th, len, olen;
 	Extnts tex;
+	XftDraw *d;
 
 	if(!drw || !drw->scheme)
 		return;
@@ -151,9 +149,11 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, const char *tex
 		for(i = len; i && i > len - 3; buf[--i] = '.');
 	XSetForeground(drw->dpy, drw->gc, (invert? drw->scheme->bg->rgb: drw->scheme->fg->rgb).pixel);
 
-	pango_layout_set_text(drw->font->plo, buf, len);
-	pango_xft_render_layout(drw->xftdrawable, &(invert? drw->scheme->bg: drw->scheme->fg)->rgb,
+	d = XftDrawCreate(drw->dpy, drw->drawable, DefaultVisual(drw->dpy, drw->screen), DefaultColormap(drw->dpy, drw->screen));
+	pango_layout_set_markup(drw->font->plo, buf, len);
+	pango_xft_render_layout(d, &(invert? drw->scheme->bg: drw->scheme->fg)->rgb,
 			drw->font->plo, tx * PANGO_SCALE, ty * PANGO_SCALE);
+	XftDrawDestroy(d);
 }
 
 void
@@ -168,7 +168,7 @@ drw_map(Drw *drw, Window win, int x, int y, unsigned int w, unsigned int h) {
 void
 drw_font_getexts(Display *dpy, Fnt *font, const char *text, unsigned int len, Extnts *tex) {
 	PangoRectangle r;
-	pango_layout_set_text(font->plo, text, len);
+	pango_layout_set_markup(font->plo, text, len);
 	pango_layout_get_extents(font->plo, &r, 0);
 	tex->w = r.width / PANGO_SCALE;
 	tex->h = r.height / PANGO_SCALE;
