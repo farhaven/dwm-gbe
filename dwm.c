@@ -814,9 +814,8 @@ drawbar(Monitor *m) {
 	if(m == selmon) { /* status is only drawn on selected monitor */
 		w = TEXTW(stext);
 		x = m->ww - w;
-		if(showsystray && m == selmon) {
+		if(showsystray)
 			x -= getsystraywidth();
-		}
 		if(x < xx) {
 			x = xx;
 			w = m->ww - xx;
