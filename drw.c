@@ -69,7 +69,7 @@ drw_font_create(Display *dpy, int screen, const char *fontname) {
 }
 
 void
-drw_font_free(Display *dpy, Fnt *font) {
+drw_font_free(Fnt *font) {
 	free(font);
 }
 
@@ -143,7 +143,7 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, const char *tex
 	tx = (x + (h / 2)) * PANGO_SCALE;
 
 	len = strlen(text);
-	drw_font_getexts(drw->dpy, drw->font, text, len, &tex);
+	drw_font_getexts(drw->font, text, len, &tex);
 
 	w = MIN(w - (tex.h / 2), tex.w) * PANGO_SCALE;
 
@@ -168,7 +168,7 @@ drw_map(Drw *drw, Window win, int x, int y, unsigned int w, unsigned int h) {
 
 
 void
-drw_font_getexts(Display *dpy, Fnt *font, const char *text, unsigned int len, Extnts *tex) {
+drw_font_getexts(Fnt *font, const char *text, unsigned int len, Extnts *tex) {
 	PangoRectangle r;
 	pango_layout_set_width(font->plo, -1);
 	pango_layout_set_text(font->plo, text, len);
@@ -178,12 +178,12 @@ drw_font_getexts(Display *dpy, Fnt *font, const char *text, unsigned int len, Ex
 }
 
 unsigned int
-drw_font_getexts_width(Display *dpy, Fnt *font, const char *text, unsigned int len) {
+drw_font_getexts_width(Fnt *font, const char *text, unsigned int len) {
 	Extnts tex;
 
 	if(!font)
 		return -1;
-	drw_font_getexts(dpy, font, text, len, &tex);
+	drw_font_getexts(font, text, len, &tex);
 	return tex.w;
 }
 
