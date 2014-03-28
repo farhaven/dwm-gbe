@@ -3,7 +3,8 @@
 #include "push.c"
 
 /* appearance */
-static const char font[] = "Droid Sans Mono 10";
+// static const char font[] = "Droid Sans Mono 10";
+static const char font[] = "Droid Sans Mono for Powerline 10";
 static const char normbordercolor[] = "#444";
 static const char normbgcolor[]     = "#bbb";
 static const char normfgcolor[]     = "#222";
