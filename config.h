@@ -76,9 +76,13 @@ static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() 
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", font, "-nb", normbgcolor, "-nf", normfgcolor, "-sb", selbgcolor, "-sf", selfgcolor, NULL };
 static const char *termcmd[] = { "fdb", NULL };
 static const char *lockcmd[] = { "xscreensaver-command", "-lock", NULL };
+static const char *incrvolume[] = { "mixerctl", "outputs.spkr=+10", "outputs.hp=+10" };
+static const char *decrvolume[] = { "mixerctl", "outputs.spkr=-10", "outputs.hp=-10" };
 
 static Key keys[] = {
 	/* modifier           key             function    argument */
+	{ 0,                  XF86XK_AudioLowerVolume, spawn, { .v = decrvolume } },
+	{ 0,                  XF86XK_AudioRaiseVolume, spawn, { .v = incrvolume } },
 	{ MODKEY,             XK_Return,      spawn,      {.v = termcmd } },
 	{ MODKEY,             XK_l,           spawn,      {.v = lockcmd } },
 	{ MODKEY,             XK_b,           togglebar,  {0} },
