@@ -54,7 +54,7 @@
 #define WIDTH(X)                ((X)->w + 2 * (X)->bw)
 #define HEIGHT(X)               ((X)->h + 2 * (X)->bw)
 #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
-#define TEXTW(X)                (drw_font_getexts_width(drw->font, X, strlen(X)) + drw->font->h)
+#define TEXTW(X)                (drw_font_getexts_width(drw->dpy, drw->font, X, strlen(X)) + drw->font->h)
 
 #define SYSTEM_TRAY_REQUEST_DOCK    0
 #define _NET_SYSTEM_TRAY_ORIENTATION_HORZ 0
@@ -519,7 +519,7 @@ cleanup(void) {
 	drw_cur_free(drw, cursor[CurNormal]);
 	drw_cur_free(drw, cursor[CurResize]);
 	drw_cur_free(drw, cursor[CurMove]);
-	drw_font_free(fnt);
+	drw_font_free(dpy, fnt);
 	drw_clr_free(scheme[SchemeNorm].border);
 	drw_clr_free(scheme[SchemeNorm].bg);
 	drw_clr_free(scheme[SchemeNorm].fg);
