@@ -903,7 +903,7 @@ focus(Client *c) {
 	if(selmon->sel && selmon->sel != c)
 		unfocus(selmon->sel, False);
 
-	if(selmon->sel && c!=selmon->sel && c && (!root || (selmon->sel->win!=root && c->win!=root)) )
+	if(selmon->sel && c!=selmon->sel && c && (!root || (selmon->sel->win!=root && c->win!=root)))
 		window_opacity_set(selmon->sel, shade);
 	if(c && c!=selmon->sel && (!root || (c->win!=root)) )
 		window_opacity_set(c, c->opacity);
