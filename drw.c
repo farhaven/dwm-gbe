@@ -150,7 +150,7 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, const char *tex
 	XSetForeground(drw->dpy, drw->gc, (invert? drw->scheme->bg->rgb: drw->scheme->fg->rgb).pixel);
 
 	d = XftDrawCreate(drw->dpy, drw->drawable, DefaultVisual(drw->dpy, drw->screen), DefaultColormap(drw->dpy, drw->screen));
-	pango_layout_set_markup(drw->font->plo, buf, len);
+	pango_layout_set_text(drw->font->plo, buf, len);
 	pango_xft_render_layout(d, &(invert? drw->scheme->bg: drw->scheme->fg)->rgb,
 			drw->font->plo, tx * PANGO_SCALE, ty * PANGO_SCALE);
 	XftDrawDestroy(d);
@@ -168,7 +168,7 @@ drw_map(Drw *drw, Window win, int x, int y, unsigned int w, unsigned int h) {
 void
 drw_font_getexts(Display *dpy, Fnt *font, const char *text, unsigned int len, Extnts *tex) {
 	PangoRectangle r;
-	pango_layout_set_markup(font->plo, text, len);
+	pango_layout_set_text(font->plo, text, len);
 	pango_layout_get_extents(font->plo, &r, 0);
 	tex->w = r.width / PANGO_SCALE;
 	tex->h = r.height / PANGO_SCALE;
