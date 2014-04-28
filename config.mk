@@ -22,7 +22,7 @@ LIBS = -L${X11LIB} -lX11 ${XINERAMALIBS} `pkg-config --libs xft pango pangoxft`
 CPPFLAGS = -D_BSD_SOURCE -D_POSIX_C_SOURCE=2 -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS}
 CFLAGS   = -g
 CFLAGS   += -std=c99 -pedantic -Wall -Wno-deprecated-declarations ${INCS} ${CPPFLAGS}
-LDFLAGS  = -s ${LIBS}
+LDFLAGS  = -g ${LIBS}
 
 # Solaris
 #CFLAGS = -fast ${INCS} -DVERSION=\"${VERSION}\"
