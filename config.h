@@ -25,12 +25,13 @@ static const char *tags[] = {
 	"1:txt", "2:mail", "3:www", "4:term", "q:comm", "w:doc", "d", "e", "f"
 };
 static const Rule rules[] = {
-	/* class      instance       title    tags mask isfloating monitor opacity */
+	/* class      instance       title    tags mask isfloating monitor focused opacity */
 	{ "Gimp",     NULL,          NULL,    1 << 6,   False,     -1,     -1 },
 	{ "Xmessage", NULL,          NULL,    0,        True,      -1,     -1 },
 	{ NULL,       "mutt",        NULL,    1 << 1,   False,     -1,     -1 },
 	{ "Surf",     NULL,          NULL,    1 << 2,   False,     -1,     -1 },
 	{ NULL,       "surf",        NULL,    1 << 2,   False,     -1,     -1 },
+	{ "Firefox",  NULL,          NULL,    1 << 2,   False,     -1,     -1 },
 	{ NULL,       "st-256color", NULL,    1 << 3,   False,     -1,     -1 },
 	{ NULL,       "irssi",       NULL,    1 << 4,   False,     -1,     -1 },
 	{ NULL,       "Pidgin",      NULL,    1 << 4,   False,     -1,     -1 },
@@ -40,6 +41,7 @@ static const Rule rules[] = {
 	{ "XDvi",     NULL,          NULL,    1 << 5,   False,     -1,     -1 },
 	{ "MPlayer",  NULL,          NULL,    0,        True,      -1,     -1 },
 	{ "Gvim",     NULL,          NULL,    1 << 0,  	False,     -1,     -1 },
+	{ "Emacs",    NULL,          NULL,    1 << 0,  	False,     -1,     -1 },
 	{ "Ssvnc",    NULL,	        NULL,    1 << 6,	True,	     -1,     -1 },
 	{ "Toplevel", NULL,          NULL,    0,        True,      -1,     -1 },
 	{ "Minitube", NULL,          NULL,    1 << 6,   False,     -1,     -1 },
@@ -48,7 +50,8 @@ static const Rule rules[] = {
 	{ "Thunderbird", "Mail",     NULL,    1 << 8,   False,     -1,     -1 },
 	{ "Thunderbird", "Calendar", NULL,    0,        True,      -1,     -1 },
 	{ "XConsole",  NULL,         NULL,    1 << 7,   False,     -1,     -1 },
-	{ "MPlayer",  NULL,          NULL,    1 << 7,   True,      -1,     -1 }
+	{ "MPlayer",  NULL,          NULL,    1 << 7,   True,      -1,      1 },
+	{ "Qjackctl", NULL,          NULL,    1 << 6,   True,      -1,     -1 }
 };
 
 /* layout(s) */
