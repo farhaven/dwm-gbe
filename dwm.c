@@ -728,7 +728,7 @@ createmon(void) {
 
 	if(!(m = (Monitor *)calloc(1, sizeof(Monitor))))
 		die("fatal: could not malloc() %u bytes\n", sizeof(Monitor));
-	m->tagset[0] = m->tagset[1] = 0;
+	m->tagset[0] = m->tagset[1] = ~0;
 	m->mfact = mfact;
 	m->nmaster = nmaster;
 	m->showbar = showbar;
