@@ -881,18 +881,19 @@ expose(XEvent *e) {
 
 void
 window_opacity_set(Client *c, double d) {
-	unsigned int opacity = 0xffffffff;
+#define OPAQUE 0xffffffff
+	unsigned int opacity;
 	if (d < 0)
 		d = 1;
-	opacity *= d;
-	if (d == 1) {
+	opacity = (unsigned int)(d * OPAQUE);
+	if (opacity == OPAQUE)
 		XDeleteProperty(dpy, c->win, netatom[NetWMWindowOpacity]);
-	} else {
+	else
 		XChangeProperty(dpy, c->win, netatom[NetWMWindowOpacity],
 			XA_CARDINAL, 32, PropModeReplace,
 			(unsigned char *) &opacity, 1L);
-	}
 	XSync(dpy, False);
+#undef OPAQUE
 }
 
 void
