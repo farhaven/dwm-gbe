@@ -4,7 +4,8 @@
 
 /* appearance */
 // static const char font[] = "Droid Sans Mono 10";
-static const char font[] = "Droid Sans Mono for Powerline 10";
+static const char font[] = "Droid Sans Mono for Powerline 9";
+// static const char font[] = "PragmataPro 11";
 static const char normbordercolor[] = "#444";
 static const char normbgcolor[]     = "#bbb";
 static const char normfgcolor[]     = "#222";
@@ -22,36 +23,37 @@ static const Bool topbar           = True;     /* False means bottom bar */
 
 /* tagging */
 static const char *tags[] = {
-	"1:txt", "2:mail", "3:www", "4:term", "q:comm", "w:doc", "d", "e", "f"
+	"2:mail", "3:www", "4:term", "q:comm", "w:doc", "d", "e", "f"
 };
 static const Rule rules[] = {
 	/* class      instance       title    tags mask isfloating monitor focused opacity */
-	{ "Gimp",     NULL,          NULL,    1 << 6,   False,     -1,     -1 },
-	{ "Xmessage", NULL,          NULL,    0,        True,      -1,     -1 },
-	{ NULL,       "mutt",        NULL,    1 << 1,   False,     -1,     -1 },
-	{ "Surf",     NULL,          NULL,    1 << 2,   False,     -1,     -1 },
-	{ NULL,       "surf",        NULL,    1 << 2,   False,     -1,     -1 },
-	{ "Firefox",  NULL,          NULL,    1 << 2,   False,     -1,     -1 },
-	{ NULL,       "st-256color", NULL,    1 << 3,   False,     -1,     -1 },
-	{ NULL,       "irssi",       NULL,    1 << 4,   False,     -1,     -1 },
-	{ NULL,       "Pidgin",      NULL,    1 << 4,   False,     -1,     -1 },
-	{ "Evince",   NULL,          NULL,    1 << 5,   False,     -1,     -1 },
-	{ "Okular",   NULL,          NULL,    1 << 5,   False,     -1,     -1 },
-	{ "Ebook-viewer", NULL,      NULL,    1 << 5,   False,     -1,     -1 },
-	{ "XDvi",     NULL,          NULL,    1 << 5,   False,     -1,     -1 },
-	{ "MPlayer",  NULL,          NULL,    0,        True,      -1,     -1 },
-	{ "Gvim",     NULL,          NULL,    1 << 0,  	False,     -1,     -1 },
-	{ "Emacs",    NULL,          NULL,    1 << 0,  	False,     -1,     -1 },
-	{ "Ssvnc",    NULL,	        NULL,    1 << 6,	True,	     -1,     -1 },
-	{ "Toplevel", NULL,          NULL,    0,        True,      -1,     -1 },
-	{ "Minitube", NULL,          NULL,    1 << 6,   False,     -1,     -1 },
-	{ "XClock",   NULL,          NULL,    0,        True,      -1,     -1 },
-	{ "NetHack",  "inventory",   NULL,    0,        True,      -1,     -1 },
-	{ "Thunderbird", "Mail",     NULL,    1 << 8,   False,     -1,     -1 },
-	{ "Thunderbird", "Calendar", NULL,    0,        True,      -1,     -1 },
-	{ "XConsole",  NULL,         NULL,    1 << 7,   False,     -1,     -1 },
-	{ "MPlayer",  NULL,          NULL,    1 << 7,   True,      -1,      1 },
-	{ "Qjackctl", NULL,          NULL,    1 << 6,   True,      -1,     -1 }
+	{ "Gimp",     NULL,          NULL,    1 << 5,   False,     -1 },
+	{ "Xmessage", NULL,          NULL,    0,        True,      -1 },
+	{ NULL,       "mutt",        NULL,    1 << 0,   False,     -1 },
+	{ "Surf",     NULL,          NULL,    1 << 1,   False,     -1 },
+	{ NULL,       "surf",        NULL,    1 << 1,   False,     -1 },
+	{ "Firefox",  NULL,          NULL,    1 << 1,   False,     -1 },
+	{ NULL,       "xterm-256color", NULL,    1 << 2,   False,  -1 },
+	{ NULL,       "irssi",       NULL,    1 << 3,   False,     -1 },
+	{ NULL,       "Pidgin",      NULL,    1 << 3,   False,     -1 },
+	{ "Evince",   NULL,          NULL,    1 << 4,   False,     -1 },
+	{ "Okular",   NULL,          NULL,    1 << 4,   False,     -1 },
+	{ "Ebook-viewer", NULL,      NULL,    1 << 4,   False,     -1 },
+	{ "XDvi",     NULL,          NULL,    1 << 4,   False,     -1 },
+	{ "MPlayer",  NULL,          NULL,    0,        True,      -1 },
+	{ "Ssvnc",    NULL,	        NULL,    1 << 5,	True,	     -1 },
+	{ "Toplevel", NULL,          NULL,    0,        True,      -1 },
+	{ "Minitube", NULL,          NULL,    1 << 5,   False,     -1 },
+	{ "XClock",   NULL,          NULL,    0,        True,      -1 },
+	{ "NetHack",  "inventory",   NULL,    0,        True,      -1 },
+	{ "Thunderbird", "Mail",     NULL,    1 << 7,   False,     -1 },
+	{ "Thunderbird", "Calendar", NULL,    0,        True,      -1 },
+	{ "Korganizer", NULL,        NULL,    1 << 7,   False,     -1 },
+	{ "XConsole",  NULL,         NULL,    1 << 6,   False,     -1 },
+	{ "MPlayer",  NULL,          NULL,    1 << 6,   True,      -1 },
+	{ "Vlc",      NULL,          NULL,    1 << 6,   False,     -1 },
+	{ "Qjackctl", NULL,          NULL,    1 << 5,   True,      -1 },
+	{ NULL,       NULL,          "glxgears", 0,     True,      -1 }
 };
 
 /* layout(s) */
@@ -78,9 +80,10 @@ static const Layout layouts[] = {
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", font, "-nb", normbgcolor, "-nf", normfgcolor, "-sb", selbgcolor, "-sf", selfgcolor, NULL };
 static const char *termcmd[] = { "fdb", NULL };
-static const char *lockcmd[] = { "xscreensaver-command", "-lock", NULL };
-static const char *incrvolume[] = { "mixerctl", "outputs.spkr=+10", "outputs.hp=+10" };
-static const char *decrvolume[] = { "mixerctl", "outputs.spkr=-10", "outputs.hp=-10" };
+// static const char *lockcmd[] = { "xscreensaver-command", "-lock", NULL};
+static const char *lockcmd[] = { "xscreensaver-command", "-lock", NULL};
+static const char *incrvolume[] = { "mixer", "vol", "+5" };
+static const char *decrvolume[] = { "mixer", "vol", "-5" };
 
 static Key keys[] = {
 	/* modifier           key             function    argument */
@@ -103,15 +106,14 @@ static Key keys[] = {
 	{ 0,                  XF86XK_Forward, focusmon,   {.i = +1 } },
 	{ MODKEY, 	          XF86XK_Back,    tagmon,     {.i = -1 } },
 	{ MODKEY,   	       XF86XK_Forward, tagmon,     {.i = +1 } },
-	TAGKEYS(              XK_1,                       0)
-	TAGKEYS(              XK_2,                       1)
-	TAGKEYS(              XK_3,                       2)
-	TAGKEYS(              XK_4,                       3)
-	TAGKEYS(              XK_q,                       4)
-	TAGKEYS(              XK_w,                       5)
-	TAGKEYS(              XK_d,                       6)
-	TAGKEYS(              XK_e,                       7)
-	TAGKEYS(	             XK_f,			              8)
+	TAGKEYS(              XK_2,                       0)
+	TAGKEYS(              XK_3,                       1)
+	TAGKEYS(              XK_4,                       2)
+	TAGKEYS(              XK_q,                       3)
+	TAGKEYS(              XK_w,                       4)
+	TAGKEYS(              XK_d,                       5)
+	TAGKEYS(              XK_e,                       6)
+	TAGKEYS(	             XK_f,			              7)
 };
 
 /* button definitions */
