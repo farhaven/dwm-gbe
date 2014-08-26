@@ -3,18 +3,16 @@
 #include "push.c"
 
 /* appearance */
-// static const char font[] = "Droid Sans Mono 10";
 static const char font[] = "Droid Sans Mono for Powerline 9";
-// static const char font[] = "PragmataPro 11";
-static const char normbordercolor[] = "#444";
-static const char normbgcolor[]     = "#bbb";
-static const char normfgcolor[]     = "#222";
-static const char selbordercolor[]  = "#057";
-static const char selbgcolor[]      = "#057";
+static const char normbordercolor[] = "#333";
+static const char normbgcolor[]     = "#333";
+static const char normfgcolor[]     = "#eee";
+static const char selbordercolor[]  = "#17a";
+static const char selbgcolor[]      = "#17a";
 static const char selfgcolor[]      = "#eee";
 
-static const unsigned int borderpx = 5;        /* border pixel of windows */
-static const unsigned int snap     = 32;       /* snap pixel */
+static const unsigned int borderpx = 2;        /* border pixel of windows */
+static const unsigned int snap     = 20;       /* snap pixel */
 static const unsigned int systrayspacing = 2;
 static const Bool showsystray      = True;
 static const double shade			  = 0.8;      /* Unfocused windows */
