@@ -55,7 +55,7 @@
 #define WIDTH(X)                ((X)->w + 2 * (X)->bw)
 #define HEIGHT(X)               ((X)->h + 2 * (X)->bw)
 #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
-#define TEXTW(X)                (drw_font_getexts_width(drw->dpy, drw->font, X, strlen(X)) + drw->font->h)
+#define TEXTW(X, M)                (drw_font_getexts_width(drw->dpy, drw->font, X, strlen(X), M) + drw->font->h)
 
 #define SYSTEM_TRAY_REQUEST_DOCK    0
 #define _NET_SYSTEM_TRAY_ORIENTATION_HORZ 0
@@ -464,7 +464,7 @@ buttonpress(XEvent *e) {
 	if(ev->window == selmon->barwin) {
 		i = x = 0;
 		do
-			x += TEXTW(tags[i]);
+			x += TEXTW(tags[i], false);
 		while(ev->x >= x && ++i < LENGTH(tags));
 		if(i < LENGTH(tags)) {
 			click = ClkTagBar;
@@ -472,7 +472,7 @@ buttonpress(XEvent *e) {
 		}
 		else if(ev->x < x + blw)
 			click = ClkLtSymbol;
-		else if(ev->x > selmon->ww - TEXTW(stext))
+		else if(ev->x > selmon->ww - TEXTW(stext, true))
 			click = ClkStatusText;
 		else
 			click = ClkWinTitle;
@@ -798,22 +798,22 @@ drawbar(Monitor *m) {
 	}
 	x = 0;
 	for(i = 0; i < LENGTH(tags); i++) {
-		w = TEXTW(tags[i]);
+		w = TEXTW(tags[i], false);
 		drw_setscheme(drw, (m->tagset[m->seltags] & (1 << i)) ?
 				&scheme[SchemeSel] : &scheme[SchemeNorm]);
-		drw_text(drw, x, 0, w, bh, tags[i], urg & (1 << i));
+		drw_text(drw, x, 0, w, bh, tags[i], urg & (1 << i), false);
 		drw_rect(drw, x, 0, w, bh,
 				m == selmon && selmon->sel && selmon->sel->tags & 1 << i,
 				occ & 1 << i, urg & 1 << i);
 		x += w;
 	}
-	w = blw = TEXTW(m->ltsymbol);
+	w = blw = TEXTW(m->ltsymbol, false);
 	drw_setscheme(drw, &scheme[SchemeNorm]);
-	drw_text(drw, x, 0, w, bh, m->ltsymbol, false);
+	drw_text(drw, x, 0, w, bh, m->ltsymbol, false, false);
 	x += w;
 	xx = x;
 	if(m == selmon) { /* status is only drawn on selected monitor */
-		w = TEXTW(stext);
+		w = TEXTW(stext, true);
 		x = m->ww - w;
 		if(showsystray)
 			x -= getsystraywidth();
@@ -821,7 +821,7 @@ drawbar(Monitor *m) {
 			x = xx;
 			w = m->ww - xx;
 		}
-		drw_text(drw, x, 0, w, bh, stext, false);
+		drw_text(drw, x, 0, w, bh, stext, false, true);
 	}
 	else
 		x = m->ww;
@@ -829,12 +829,12 @@ drawbar(Monitor *m) {
 		x = xx;
 		if(m->sel) {
 			drw_setscheme(drw, m == selmon ? &scheme[SchemeSel] : &scheme[SchemeNorm]);
-			drw_text(drw, x, 0, w, bh, m->sel->name, false);
+			drw_text(drw, x, 0, w, bh, m->sel->name, false, false);
 			drw_rect(drw, x, 0, w, bh, m->sel->isfixed, m->sel->isfloating, 0);
 		}
 		else {
 			drw_setscheme(drw, &scheme[SchemeNorm]);
-			drw_text(drw, x, 0, w, bh, NULL, false);
+			drw_text(drw, x, 0, w, bh, NULL, false, false);
 		}
 	}
 	drw_map(drw, m->barwin, 0, 0, m->ww, bh);

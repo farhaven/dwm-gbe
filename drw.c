@@ -123,7 +123,7 @@ drw_rect(Drw *drw, int x, int y, unsigned int w, unsigned int h, int filled, int
 }
 
 void
-drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, const char *text, bool invert) {
+drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, const char *text, bool invert, bool markup) {
 	char buf[256];
 	int i, tx, ty, th, len, olen;
 	Extnts tex;
@@ -136,13 +136,13 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, const char *tex
 	if(!text || !drw->font)
 		return;
 	olen = strlen(text);
-	drw_font_getexts(drw->dpy, drw->font, text, olen, &tex);
+	drw_font_getexts(drw->dpy, drw->font, text, olen, &tex, markup);
 	th = drw->font->ascent + drw->font->descent;
 	ty = y + (h / 2) - (th / 2);
 	tx = x + (h / 2);
 	/* shorten text if necessary */
 	for(len = MIN(olen, sizeof buf); len && (tex.w > w - tex.h || w < tex.h); len--)
-		drw_font_getexts(drw->dpy, drw->font, text, len, &tex);
+		drw_font_getexts(drw->dpy, drw->font, text, len, &tex, markup);
 	if(!len)
 		return;
 	memcpy(buf, text, len);
@@ -151,7 +151,15 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, const char *tex
 	XSetForeground(drw->dpy, drw->gc, (invert? drw->scheme->bg->rgb: drw->scheme->fg->rgb).pixel);
 
 	d = XftDrawCreate(drw->dpy, drw->drawable, DefaultVisual(drw->dpy, drw->screen), DefaultColormap(drw->dpy, drw->screen));
-	pango_layout_set_text(drw->font->plo, buf, len);
+	if (markup) {
+		if (!pango_parse_markup(buf, len, 0, NULL, NULL, NULL, NULL)) {
+			pango_layout_set_text(drw->font->plo, buf, len);
+		} else {
+			pango_layout_set_markup(drw->font->plo, buf, len);
+		}
+	} else {
+		pango_layout_set_text(drw->font->plo, buf, len);
+	}
 	pango_xft_render_layout(d, &(invert? drw->scheme->bg: drw->scheme->fg)->rgb,
 			drw->font->plo, tx * PANGO_SCALE, ty * PANGO_SCALE);
 	XftDrawDestroy(d);
@@ -167,21 +175,29 @@ drw_map(Drw *drw, Window win, int x, int y, unsigned int w, unsigned int h) {
 
 
 void
-drw_font_getexts(Display *dpy, Fnt *font, const char *text, unsigned int len, Extnts *tex) {
+drw_font_getexts(Display *dpy, Fnt *font, const char *text, unsigned int len, Extnts *tex, bool markup) {
 	PangoRectangle r;
-	pango_layout_set_text(font->plo, text, len);
+	if (markup) {
+		if (!pango_parse_markup(text, len, 0, NULL, NULL, NULL, NULL)) {
+			pango_layout_set_text(font->plo, text, len);
+		} else {
+			pango_layout_set_markup(font->plo, text, len);
+		}
+	} else {
+		pango_layout_set_text(font->plo, text, len);
+	}
 	pango_layout_get_extents(font->plo, &r, 0);
 	tex->w = r.width / PANGO_SCALE;
 	tex->h = r.height / PANGO_SCALE;
 }
 
 unsigned int
-drw_font_getexts_width(Display *dpy, Fnt *font, const char *text, unsigned int len) {
+drw_font_getexts_width(Display *dpy, Fnt *font, const char *text, unsigned int len, bool markup) {
 	Extnts tex;
 
 	if(!font)
 		return -1;
-	drw_font_getexts(dpy, font, text, len, &tex);
+	drw_font_getexts(dpy, font, text, len, &tex, markup);
 	return tex.w;
 }
 
