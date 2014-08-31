@@ -26,6 +26,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -800,15 +801,17 @@ drawbar(Monitor *m) {
 	x = 0;
 	for(i = 0; i < LENGTH(tags); i++) {
 		w = TEXTW(tags[i]);
-		drw_setscheme(drw, m->tagset[m->seltags] & 1 << i ? &scheme[SchemeSel] : &scheme[SchemeNorm]);
-		drw_text(drw, x, 0, w, bh, tags[i], urg & 1 << i);
-		drw_rect(drw, x, 0, w, bh, m == selmon && selmon->sel && selmon->sel->tags & 1 << i,
-		           occ & 1 << i, urg & 1 << i);
+		drw_setscheme(drw, (m->tagset[m->seltags] & (1 << i)) ?
+				&scheme[SchemeSel] : &scheme[SchemeNorm]);
+		drw_text(drw, x, 0, w, bh, tags[i], urg & (1 << i));
+		drw_rect(drw, x, 0, w, bh,
+				m == selmon && selmon->sel && selmon->sel->tags & 1 << i,
+				occ & 1 << i, urg & 1 << i);
 		x += w;
 	}
 	w = blw = TEXTW(m->ltsymbol);
 	drw_setscheme(drw, &scheme[SchemeNorm]);
-	drw_text(drw, x, 0, w, bh, m->ltsymbol, 0);
+	drw_text(drw, x, 0, w, bh, m->ltsymbol, false);
 	x += w;
 	xx = x;
 	if(m == selmon) { /* status is only drawn on selected monitor */
@@ -820,7 +823,7 @@ drawbar(Monitor *m) {
 			x = xx;
 			w = m->ww - xx;
 		}
-		drw_text(drw, x, 0, w, bh, stext, 0);
+		drw_text(drw, x, 0, w, bh, stext, false);
 	}
 	else
 		x = m->ww;
@@ -828,12 +831,12 @@ drawbar(Monitor *m) {
 		x = xx;
 		if(m->sel) {
 			drw_setscheme(drw, m == selmon ? &scheme[SchemeSel] : &scheme[SchemeNorm]);
-			drw_text(drw, x, 0, w, bh, m->sel->name, 0);
+			drw_text(drw, x, 0, w, bh, m->sel->name, false);
 			drw_rect(drw, x, 0, w, bh, m->sel->isfixed, m->sel->isfloating, 0);
 		}
 		else {
 			drw_setscheme(drw, &scheme[SchemeNorm]);
-			drw_text(drw, x, 0, w, bh, NULL, 0);
+			drw_text(drw, x, 0, w, bh, NULL, false);
 		}
 	}
 	drw_map(drw, m->barwin, 0, 0, m->ww, bh);

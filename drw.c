@@ -1,6 +1,7 @@
 /* See LICENSE file for copyright and license details. */
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <X11/Xlib.h>
 #include <X11/Xft/Xft.h>
@@ -122,7 +123,7 @@ drw_rect(Drw *drw, int x, int y, unsigned int w, unsigned int h, int filled, int
 }
 
 void
-drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, const char *text, int invert) {
+drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, const char *text, bool invert) {
 	char buf[256];
 	int i, tx, ty, th, len, olen;
 	Extnts tex;

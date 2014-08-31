@@ -1,4 +1,6 @@
 /* See LICENSE file for copyright and license details. */
+#include <stdbool.h>
+
 #include <X11/Xft/Xft.h>
 #include <pango/pango.h>
 #include <pango/pangoxft.h>
@@ -71,7 +73,7 @@ void drw_setscheme(Drw *drw, ClrScheme *scheme);
 
 /* Drawing functions */
 void drw_rect(Drw *drw, int x, int y, unsigned int w, unsigned int h, int filled, int empty, int invert);
-void drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, const char *text, int invert);
+void drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, const char *text, bool invert);
 
 /* Map functions */
 void drw_map(Drw *drw, Window win, int x, int y, unsigned int w, unsigned int h);
