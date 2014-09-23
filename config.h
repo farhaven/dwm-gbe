@@ -3,13 +3,14 @@
 #include "push.c"
 
 /* appearance */
-static const char font[] = "Droid Sans Mono for Powerline 9";
-static const char normbordercolor[] = "#333";
-static const char normbgcolor[]     = "#333";
-static const char normfgcolor[]     = "#eee";
-static const char selbordercolor[]  = "#17a";
-static const char selbgcolor[]      = "#17a";
-static const char selfgcolor[]      = "#eee";
+// static const char font[] = "Droid Sans Mono for Powerline 9";
+static const char font[] = "Ubuntu Mono derivative Powerline 10.5";
+static const char normbordercolor[] = "#ccc";
+static const char normbgcolor[]     = "#ccc";
+static const char normfgcolor[]     = "#000";
+static const char selbordercolor[]  = "#666";
+static const char selbgcolor[]      = "#666";
+static const char selfgcolor[]      = "#fff";
 
 static const unsigned int borderpx = 2;        /* border pixel of windows */
 static const unsigned int snap     = 20;       /* snap pixel */
