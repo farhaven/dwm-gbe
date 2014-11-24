@@ -3,8 +3,8 @@
 #include "push.c"
 
 /* appearance */
-// static const char font[] = "Droid Sans Mono for Powerline 9";
-static const char font[] = "Terminess Powerline 9";
+static const char font[] = "Droid Sans Mono for Powerline 7.5";
+// static const char font[] = "Terminess Powerline 9";
 static const char normbordercolor[] = "#ccc";
 static const char normbgcolor[]     = "#ccc";
 static const char normfgcolor[]     = "#000";
@@ -37,11 +37,12 @@ static const Rule rules[] = {
 	{ NULL,       "irssi",       NULL,    1 << 3,   False,     -1 },
 	{ NULL,       "Pidgin",      NULL,    1 << 3,   False,     -1 },
 	{ "Evince",   NULL,          NULL,    1 << 4,   False,     -1 },
+	{ "Xpdf",     NULL,          NULL,    1 << 4,   False,     -1 },
 	{ "Okular",   NULL,          NULL,    1 << 4,   False,     -1 },
 	{ "Ebook-viewer", NULL,      NULL,    1 << 4,   False,     -1 },
 	{ "XDvi",     NULL,          NULL,    1 << 4,   False,     -1 },
 	{ "MPlayer",  NULL,          NULL,    0,        True,      -1 },
-	{ "Ssvnc",    NULL,	        NULL,    1 << 5,	True,	     -1 },
+	{ "Ssvnc",    NULL,	     NULL,    1 << 5,	True,	   -1 },
 	{ "Toplevel", NULL,          NULL,    0,        True,      -1 },
 	{ "Minitube", NULL,          NULL,    1 << 5,   False,     -1 },
 	{ "XClock",   NULL,          NULL,    0,        True,      -1 },
@@ -53,6 +54,7 @@ static const Rule rules[] = {
 	{ "MPlayer",  NULL,          NULL,    1 << 6,   True,      -1 },
 	{ "Vlc",      NULL,          NULL,    1 << 6,   False,     -1 },
 	{ "Qjackctl", NULL,          NULL,    1 << 5,   True,      -1 },
+	{ NULL,	      NULL,          "ED",    1 << 6,   False,     -1 },
 	{ NULL,       NULL,          "glxgears", 0,     True,      -1 }
 };
 
