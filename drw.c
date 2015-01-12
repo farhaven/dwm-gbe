@@ -141,8 +141,8 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, const char *tex
 	ty = y + (h / 2) - (th / 2);
 	tx = x + (h / 2);
 	/* shorten text if necessary */
-	for(len = MIN(olen, sizeof buf); len && (tex.w > w - tex.h || w < tex.h); len--)
-		drw_font_getexts(drw->dpy, drw->font, text, len, &tex, markup);
+	for(len = MIN(olen, sizeof buf); len && tex.w > w; len--)
+		drw_font_getexts(drw, text, len, &tex, markup);
 	if(!len)
 		return;
 	memcpy(buf, text, len);
