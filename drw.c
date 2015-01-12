@@ -136,7 +136,7 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, const char *tex
 	if(!text || !drw->font)
 		return;
 	olen = strlen(text);
-	drw_font_getexts(drw->dpy, drw->font, text, olen, &tex, markup);
+	drw_font_getexts(drw, text, olen, &tex, markup);
 	th = drw->font->ascent + drw->font->descent;
 	ty = y + (h / 2) - (th / 2);
 	tx = x + (h / 2);
@@ -173,27 +173,27 @@ drw_map(Drw *drw, Window win, int x, int y, unsigned int w, unsigned int h) {
 
 
 void
-drw_font_getexts(Display *dpy, Fnt *font, const char *text, unsigned int len, Extnts *tex, bool markup) {
+drw_font_getexts(Drw* drw, const char *text, unsigned int len, Extnts *tex, bool markup) {
 	PangoRectangle r;
 	if ((!markup) || (!pango_parse_markup(text, len, 0, NULL, NULL, NULL, NULL))) {
-		pango_layout_set_markup(font->plo, "", 0);
-		pango_layout_set_text(font->plo, text, len);
+		pango_layout_set_markup(drw->font->plo, "", 0);
+		pango_layout_set_text(drw->font->plo, text, len);
 	} else {
-		pango_layout_set_text(font->plo, "", 0);
-		pango_layout_set_markup(font->plo, text, len);
+		pango_layout_set_text(drw->font->plo, "", 0);
+		pango_layout_set_markup(drw->font->plo, text, len);
 	}
-	pango_layout_get_extents(font->plo, &r, 0);
+	pango_layout_get_extents(drw->font->plo, &r, 0);
 	tex->w = r.width / PANGO_SCALE;
 	tex->h = r.height / PANGO_SCALE;
 }
 
 unsigned int
-drw_font_getexts_width(Display *dpy, Fnt *font, const char *text, unsigned int len, bool markup) {
+drw_font_getexts_width(Drw* drw, const char *text, unsigned int len, bool markup) {
 	Extnts tex;
 
-	if(!font)
+	if(!drw->font)
 		return -1;
-	drw_font_getexts(dpy, font, text, len, &tex, markup);
+	drw_font_getexts(drw, text, len, &tex, markup);
 	return tex.w;
 }
 

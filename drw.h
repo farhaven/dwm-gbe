@@ -56,8 +56,8 @@ void drw_free(Drw *drw);
 /* Fnt abstraction */
 Fnt *drw_font_create(Display *dpy, int screen, const char *fontname);
 void drw_font_free(Display *dpy, Fnt *font);
-void drw_font_getexts(Display *dpy, Fnt *font, const char *text, unsigned int len, Extnts *extnts, bool markup);
-unsigned int drw_font_getexts_width(Display *dpy, Fnt *font, const char *text, unsigned int len, bool markup);
+void drw_font_getexts(Drw* drw, const char *text, unsigned int len, Extnts *extnts, bool markup);
+unsigned int drw_font_getexts_width(Drw* drw, const char *text, unsigned int len, bool markup);
 
 /* Colour abstraction */
 Clr *drw_clr_create(Drw *drw, const char *clrname);
