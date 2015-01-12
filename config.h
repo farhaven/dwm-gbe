@@ -43,7 +43,7 @@ static const Rule rules[] = {
 	{ "Ebook-viewer", NULL,      NULL,    1 << 4,   False,     -1 },
 	{ "XDvi",     NULL,          NULL,    1 << 4,   False,     -1 },
 	{ "MPlayer",  NULL,          NULL,    0,        True,      -1 },
-	{ "Ssvnc",    NULL,	     NULL,    1 << 5,	True,	   -1 },
+	{ "Ssvnc",    NULL,          NULL,    1 << 5,   True,      -1 },
 	{ "Toplevel", NULL,          NULL,    0,        True,      -1 },
 	{ "Minitube", NULL,          NULL,    1 << 5,   False,     -1 },
 	{ "XClock",   NULL,          NULL,    0,        True,      -1 },
@@ -55,8 +55,9 @@ static const Rule rules[] = {
 	{ "MPlayer",  NULL,          NULL,    1 << 6,   True,      -1 },
 	{ "Vlc",      NULL,          NULL,    1 << 6,   False,     -1 },
 	{ "Qjackctl", NULL,          NULL,    1 << 5,   True,      -1 },
-	{ NULL,	      NULL,          "ED",    1 << 6,   False,     -1 },
-	{ NULL,       NULL,          "glxgears", 0,     True,      -1 }
+	{ NULL,       NULL,          "ED",    1 << 6,   False,     -1 },
+	{ NULL,       NULL,          "glxgears", 0,     True,      -1 },
+	{ NULL,       NULL,          "livestream", 1 << 6, True,   -1 }
 };
 
 /* layout(s) */
@@ -86,15 +87,16 @@ static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", font,
 	"-nb", normbgcolor, "-nf", normfgcolor, "-sb", selbgcolor, "-sf", selfgcolor,
 	NULL };
 static const char *termcmd[] = { "fdb", NULL };
-// static const char *lockcmd[] = { "xscreensaver-command", "-lock", NULL};
 static const char *lockcmd[] = { "xscreensaver-command", "-lock", NULL};
-static const char *incrvolume[] = { "mixer", "vol", "+5" };
-static const char *decrvolume[] = { "mixer", "vol", "-5" };
+
+#define MPD_CMD(___c) { \
+	.v = (char *[]) { \
+		"mpc", ___c, NULL \
+	} \
+}
 
 static Key keys[] = {
 	/* modifier           key             function    argument */
-	{ 0,                  XF86XK_AudioLowerVolume, spawn, { .v = decrvolume } },
-	{ 0,                  XF86XK_AudioRaiseVolume, spawn, { .v = incrvolume } },
 	{ MODKEY,             XK_Return,      spawn,      {.v = termcmd } },
 	{ MODKEY,             XK_l,           spawn,      {.v = lockcmd } },
 	{ MODKEY,             XK_b,           togglebar,  {0} },
@@ -112,6 +114,10 @@ static Key keys[] = {
 	{ 0,                  XF86XK_Forward, focusmon,   {.i = +1 } },
 	{ MODKEY,             XF86XK_Back,    tagmon,     {.i = -1 } },
 	{ MODKEY,             XF86XK_Forward, tagmon,     {.i = +1 } },
+	{ 0,                  XF86XK_AudioStop, spawn,    MPD_CMD("stop") },
+	{ 0,                  XF86XK_AudioPlay, spawn,    MPD_CMD("toggle") },
+	{ 0,                  XF86XK_AudioPrev, spawn,    MPD_CMD("prev") },
+	{ 0,                  XF86XK_AudioNext, spawn,    MPD_CMD("next") },
 	TAGKEYS(              XK_2,                       0)
 	TAGKEYS(              XK_3,                       1)
 	TAGKEYS(              XK_4,                       2)
