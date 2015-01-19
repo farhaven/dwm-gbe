@@ -63,7 +63,7 @@ static const Rule rules[] = {
 /* layout(s) */
 static const float mfact      = 0.58;
 static const int nmaster      = 1;
-static const Bool resizehints = True;
+static const Bool resizehints = False;
 
 static const Layout layouts[] = {
 	/* symbol     arrange function */
