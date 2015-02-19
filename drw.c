@@ -136,18 +136,21 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, const char *tex
 	if(!text || !drw->font)
 		return;
 	olen = strlen(text);
-	drw_font_getexts(drw, text, olen, &tex, markup);
 	th = drw->font->ascent + drw->font->descent;
 	ty = y + (h / 2) - (th / 2);
 	tx = x + (h / 2);
+
 	/* shorten text if necessary */
-	for(len = MIN(olen, sizeof buf); len && tex.w >= w; len--)
-		drw_font_getexts(drw, text, len, &tex, markup);
+	len = MIN(olen, sizeof buf) + 1;
+	do {
+		drw_font_getexts(drw, text, len--, &tex, markup);
+	} while (len && tex.w >= (w - (h/2)));
 	if(!len)
 		return;
 	memcpy(buf, text, len);
 	if(len < olen)
 		for(i = len; i && i > len - 3; buf[--i] = '.');
+
 	XSetForeground(drw->dpy, drw->gc, (invert? drw->scheme->bg->rgb: drw->scheme->fg->rgb).pixel);
 
 	d = XftDrawCreate(drw->dpy, drw->drawable, DefaultVisual(drw->dpy, drw->screen), DefaultColormap(drw->dpy, drw->screen));
