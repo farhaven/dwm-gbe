@@ -55,7 +55,7 @@
 #define WIDTH(X)             ((X)->w + 2 * (X)->bw)
 #define HEIGHT(X)            ((X)->h + 2 * (X)->bw)
 #define TAGMASK              ((1 << LENGTH(tags)) - 1)
-#define TEXTW(X, M)          (drw_font_getexts_width(drw, X, strlen(X), M) + drw->font->h)
+#define TEXTW(X, M)          (drw_font_getexts_width(drw, X, strlen(X), M) + bh + 2)
 
 #define SYSTEM_TRAY_REQUEST_DOCK    0
 #define _NET_SYSTEM_TRAY_ORIENTATION_HORZ 0
