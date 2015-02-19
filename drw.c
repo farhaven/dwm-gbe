@@ -144,7 +144,7 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, const char *tex
 	len = MIN(olen, sizeof buf) + 1;
 	do {
 		drw_font_getexts(drw, text, len--, &tex, markup);
-	} while (len && tex.w >= (w - (h/2)));
+	} while (len && tex.w >= (w - h));
 	if(!len)
 		return;
 	memcpy(buf, text, len);
