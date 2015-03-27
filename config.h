@@ -23,41 +23,52 @@ static const Bool topbar           = True;     /* False means bottom bar */
 
 /* tagging */
 static const char *tags[] = {
-	"2:mail", "3:www", "4:term", "q:comm", "w:doc", "d", "e", "f"
+	"2:mail", "3:www", "4:term", "q:comm", "w:doc", "d", "e", "f:cal"
+};
+enum {
+	T_NONE  = 0,
+	T_MAIL  = 1 << 0,
+	T_WWW   = 1 << 1,
+	T_TERM  = 1 << 2,
+	T_COMM  = 1 << 3,
+	T_DOC   = 1 << 4,
+	T_MISC1 = 1 << 5,
+	T_MISC2 = 1 << 6,
+	T_CAL   = 1 << 7
 };
 static const Rule rules[] = {
 	/* class      instance       title    tags mask isfloating monitor */
-	{ "Gimp",     NULL,          NULL,    1 << 5,   False,     -1 },
-	{ "Xmessage", NULL,          NULL,    0,        True,      -1 },
-	{ NULL,       "mutt",        NULL,    1 << 0,   False,     -1 },
-	{ "Surf",     NULL,          NULL,    1 << 1,   False,     -1 },
-	{ NULL,       "surf",        NULL,    1 << 1,   False,     -1 },
-	{ "Firefox",  NULL,          NULL,    1 << 1,   False,     -1 },
-	{ NULL,       "xterm-256color", NULL, 1 << 2,   False,     -1 },
-	{ NULL,       "st-256color", NULL,    1 << 2,   False,     -1 },
-	{ NULL,       "irssi",       NULL,    1 << 3,   False,     -1 },
-	{ NULL,       "Pidgin",      NULL,    1 << 3,   False,     -1 },
-	{ "Evince",   NULL,          NULL,    1 << 4,   False,     -1 },
-	{ "Xpdf",     NULL,          NULL,    1 << 4,   False,     -1 },
-	{ "Okular",   NULL,          NULL,    1 << 4,   False,     -1 },
-	{ "Ebook-viewer", NULL,      NULL,    1 << 4,   False,     -1 },
-	{ "XDvi",     NULL,          NULL,    1 << 4,   False,     -1 },
-	{ "MPlayer",  NULL,          NULL,    0,        True,      -1 },
-	{ "Ssvnc",    NULL,          NULL,    1 << 5,   True,      -1 },
-	{ "Toplevel", NULL,          NULL,    0,        True,      -1 },
-	{ "Minitube", NULL,          NULL,    1 << 5,   False,     -1 },
-	{ "XClock",   NULL,          NULL,    0,        True,      -1 },
-	{ "NetHack",  "inventory",   NULL,    0,        True,      -1 },
-	{ "Thunderbird", "Mail",     NULL,    1 << 7,   False,     -1 },
-	{ "Thunderbird", "Calendar", NULL,    0,        True,      -1 },
-	{ "Tkremind", NULL,          NULL,    1 << 7,   False,     -1 },
-	{ "XConsole",  NULL,         NULL,    1 << 6,   False,     -1 },
-	{ "MPlayer",  NULL,          NULL,    1 << 6,   True,      -1 },
-	{ "Vlc",      NULL,          NULL,    1 << 6,   False,     -1 },
-	{ "Qjackctl", NULL,          NULL,    1 << 5,   True,      -1 },
-	{ NULL,       NULL,          "ED",    1 << 6,   False,     -1 },
-	{ NULL,       NULL,          "glxgears", 0,     True,      -1 },
-	{ NULL,       NULL,          "livestream", 1 << 6, True,   -1 }
+	{ "Gimp",     NULL,          NULL,    T_MISC1,  False,     -1 },
+	{ "Xmessage", NULL,          NULL,    T_NONE,   True,      -1 },
+	{ NULL,       "mutt",        NULL,    T_MAIL,   False,     -1 },
+	{ "Surf",     NULL,          NULL,    T_WWW,    False,     -1 },
+	{ NULL,       "surf",        NULL,    T_WWW,    False,     -1 },
+	{ "Firefox",  NULL,          NULL,    T_WWW,    False,     -1 },
+	{ NULL,       "xterm-256color", NULL, T_TERM,   False,     -1 },
+	{ NULL,       "st-256color", NULL,    T_TERM,   False,     -1 },
+	{ NULL,       "irssi",       NULL,    T_COMM,   False,     -1 },
+	{ NULL,       "Pidgin",      NULL,    T_COMM,   False,     -1 },
+	{ "Evince",   NULL,          NULL,    T_DOC,    False,     -1 },
+	{ "Xpdf",     NULL,          NULL,    T_DOC,    False,     -1 },
+	{ "Okular",   NULL,          NULL,    T_DOC,    False,     -1 },
+	{ "Ebook-viewer", NULL,      NULL,    T_DOC,    False,     -1 },
+	{ "XDvi",     NULL,          NULL,    T_DOC,    False,     -1 },
+	{ "Ssvnc",    NULL,          NULL,    T_MISC1,  True,      -1 },
+	{ "Toplevel", NULL,          NULL,    T_NONE,   True,      -1 },
+	{ "Minitube", NULL,          NULL,    T_MISC1,  False,     -1 },
+	{ "Qjackctl", NULL,          NULL,    T_MISC1,  True,      -1 },
+	{ "libreoffice", NULL,       NULL,    T_DOC,    False,     -1 },
+	{ NULL,       "transmission-gtk", NULL,T_MISC1, False,     -1 },
+	{ NULL,       NULL,          "LibreOffice", T_DOC, False,  -1 },
+	{ "XClock",   NULL,          NULL,    T_NONE,   True,      -1 },
+	{ "NetHack",  "inventory",   NULL,    T_NONE,   True,      -1 },
+	{ "Tkremind", NULL,          NULL,    T_CAL,    False,     -1 },
+	{ "XConsole",  NULL,         NULL,    T_MISC2,  False,     -1 },
+	{ "MPlayer",  NULL,          NULL,    T_MISC2,  True,      -1 },
+	{ "Vlc",      NULL,          NULL,    T_MISC2,  False,     -1 },
+	{ "Inkscape", NULL,          NULL,    T_MISC2,  False,     -1 },
+	{ NULL,       NULL,          "glxgears", T_NONE,True,      -1 },
+	{ NULL,       NULL,          "livestream", T_MISC2, True,  -1 }
 };
 
 /* layout(s) */
