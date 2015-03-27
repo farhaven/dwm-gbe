@@ -1,6 +1,5 @@
 /* See LICENSE file for copyright and license details. */
 #include <X11/XF86keysym.h>
-#include "push.c"
 
 /* appearance */
 // static const char font[] = "Droid Sans Mono for Powerline 7.5";
