@@ -49,3 +49,14 @@ Configuration
 -------------
 The configuration of dwm is done by creating a custom config.h
 and (re)compiling the source code.
+
+
+Differences from suckless.org's DWM
+-----------------------------------
+This DWM is a bit different from the one that can be found on suckless.org. It's based on suckless DWM 6.0 with these changes:
+
+* XFT and pango instead of X bitmap fonts. This means you can use pango markup for e.g. bold status text
+* Small changes to the TEXTW macro to make box sizes symmetric and prevent overdraw of text, for example for long window names
+* The `push` patch has been merged into dwm.c
+* The `systray` patch has been integrated
+* Some small cleanups around the code
