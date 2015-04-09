@@ -650,19 +650,22 @@ configurenotify(XEvent *e) {
 	Bool dirty;
 
 	// TODO: updategeom handling sucks, needs to be simplified
-	if(ev->window == root) {
-		dirty = (sw != ev->width || sh != ev->height);
-		sw = ev->width;
-		sh = ev->height;
-		if(updategeom() || dirty) {
-			drw_resize(drw, sw, bh);
-			updatebars();
-			for(m = mons; m; m = m->next)
-				resizebarwin(m);
-			focus(NULL);
-			arrange(NULL);
-		}
-	}
+	if (ev->window != root)
+		return;
+
+	dirty = (sw != ev->width || sh != ev->height);
+	sw = ev->width;
+	sh = ev->height;
+
+	if (!(updategeom() || dirty))
+		return;
+
+	drw_resize(drw, sw, bh);
+	updatebars();
+	for(m = mons; m; m = m->next)
+		resizebarwin(m);
+	focus(NULL);
+	arrange(NULL);
 }
 
 void
