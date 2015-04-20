@@ -869,7 +869,6 @@ enternotify(XEvent *e) {
 	else if(!c || c == selmon->sel)
 		return;
 	focus(c);
-	restack(selmon);
 }
 
 void
@@ -1504,22 +1503,15 @@ resizerequest(XEvent *e) {
 
 void
 restack(Monitor *m) {
-	Client *c, *tmp;
+	Client *c;
 	XEvent ev;
 	XWindowChanges wc;
-	Window trans = None;
 
 	drawbar(m);
 	if(!m->sel)
 		return;
 	if(m->sel->isfloating || !m->lt[m->sellt]->arrange)
 		XRaiseWindow(dpy, m->sel->win);
-	/* Re-raise all transient windows */
-	for (c = m->clients; c; c = c->next) {
-		if (XGetTransientForHint(dpy, c->win, &trans) && (tmp = wintoclient(trans))) {
-			XRaiseWindow(dpy, c->win);
-		}
-	}
 	if(m->lt[m->sellt]->arrange) {
 		wc.stack_mode = Below;
 		wc.sibling = m->barwin;
