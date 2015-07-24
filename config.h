@@ -43,12 +43,14 @@ static const Rule rules[] = {
 	{ "Surf",     NULL,          NULL,    T_WWW,    False,     -1 },
 	{ NULL,       "surf",        NULL,    T_WWW,    False,     -1 },
 	{ "Firefox",  NULL,          NULL,    T_WWW,    False,     -1 },
+	{ "Chrome",   NULL,          NULL,    T_WWW,    False,     -1 },
 	{ NULL,       "xterm-256color", NULL, T_TERM,   False,     -1 },
 	{ NULL,       "st-256color", NULL,    T_TERM,   False,     -1 },
 	{ NULL,       "irssi",       NULL,    T_COMM,   False,     -1 },
 	{ NULL,       "Pidgin",      NULL,    T_COMM,   False,     -1 },
-	{ "Evince",   NULL,          NULL,    T_DOC,    False,     -1 },
+	{ "Zathura",  NULL,          NULL,    T_DOC,    False,     -1 },
 	{ "Xpdf",     NULL,          NULL,    T_DOC,    False,     -1 },
+	{ "Evince",     NULL,          NULL,    T_DOC,    False,     -1 },
 	{ "Okular",   NULL,          NULL,    T_DOC,    False,     -1 },
 	{ "Ebook-viewer", NULL,      NULL,    T_DOC,    False,     -1 },
 	{ "XDvi",     NULL,          NULL,    T_DOC,    False,     -1 },
@@ -62,8 +64,9 @@ static const Rule rules[] = {
 	{ "XClock",   NULL,          NULL,    T_NONE,   True,      -1 },
 	{ "NetHack",  "inventory",   NULL,    T_NONE,   True,      -1 },
 	{ "Tkremind", NULL,          NULL,    T_CAL,    False,     -1 },
-	{ "XConsole",  NULL,         NULL,    T_MISC2,  False,     -1 },
+	{ "XConsole", NULL,          NULL,    T_MISC2,  False,     -1 },
 	{ "MPlayer",  NULL,          NULL,    T_MISC2,  True,      -1 },
+	{ "mpv",      NULL,          NULL,    T_MISC2,  True,      -1 },
 	{ "Vlc",      NULL,          NULL,    T_MISC2,  False,     -1 },
 	{ "Inkscape", NULL,          NULL,    T_MISC2,  False,     -1 },
 	{ NULL,       NULL,          "glxgears", T_NONE,True,      -1 },
@@ -91,11 +94,6 @@ static const Layout layouts[] = {
 	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,  {.ui = 1 << TAG} }
 
 /* commands */
-/* component of dmenucmd, manipulated in spawn() */
-static char dmenumon[2] = "0";
-static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", font,
-	"-nb", normbgcolor, "-nf", normfgcolor, "-sb", selbgcolor, "-sf", selfgcolor,
-	NULL };
 static const char *termcmd[] = { "fdb", NULL };
 static const char *lockcmd[] = { "xscreensaver-command", "-lock", NULL};
 
@@ -120,8 +118,8 @@ static Key keys[] = {
 	{ MODKEY | ShiftMask, XK_c,           killclient, {0} },
 	{ MODKEY,             XK_0,           toggleview, {.ui = ~0 } },
 	{ MODKEY | ShiftMask, XK_0,           toggletag,  {.ui = ~0 } },
-	{ MODKEY,             XK_space,   focusmon,   {.i = -1 } },
-	{ MODKEY | ShiftMask, XK_space,   tagmon,     {.i = -1 } },
+	{ MODKEY,             XK_space,       focusmon,   {.i = -1 } },
+	{ MODKEY | ShiftMask, XK_space,       tagmon,     {.i = -1 } },
 	{ 0,                  XF86XK_Back,    focusmon,   {.i = -1 } },
 	{ MODKEY,             XF86XK_Back,    tagmon,     {.i = -1 } },
 	{ 0,                  XF86XK_AudioStop, spawn,    MPD_CMD("stop") },
