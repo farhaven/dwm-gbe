@@ -88,10 +88,10 @@ static const Layout layouts[] = {
 /* key definitions */
 #define MODKEY Mod3Mask
 #define TAGKEYS(KEY,TAG) \
-	{ MODKEY,                       KEY,      toggleview, {.ui = 1 << TAG} }, \
-	{ MODKEY|ControlMask,           KEY,      view,       {.ui = 1 << TAG} }, \
-	{ MODKEY|ShiftMask,             KEY,      tag,        {.ui = 1 << TAG} }, \
-	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,  {.ui = 1 << TAG} }
+	{ MODKEY,                       KEY,      toggleview, {.ui = TAG} }, \
+	{ MODKEY|ControlMask,           KEY,      view,       {.ui = TAG} }, \
+	{ MODKEY|ShiftMask,             KEY,      tag,        {.ui = TAG} }, \
+	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,  {.ui = TAG} }
 
 /* commands */
 static const char *termcmd[] = { "fdb", NULL };
@@ -126,17 +126,15 @@ static Key keys[] = {
 	{ 0,                  XF86XK_AudioPlay, spawn,    MPD_CMD("toggle") },
 	{ 0,                  XF86XK_AudioPrev, spawn,    MPD_CMD("prev") },
 	{ 0,                  XF86XK_AudioNext, spawn,    MPD_CMD("next") },
-	TAGKEYS(XK_2, 0),
-	TAGKEYS(XK_3, 1),
-	TAGKEYS(XK_4, 2),
-	TAGKEYS(XK_q, 3),
-	TAGKEYS(XK_w, 4),
-	TAGKEYS(XK_d, 5),
-	TAGKEYS(XK_e, 6),
-	TAGKEYS(XK_f, 7),
-
-	{ MODKEY,             XK_j, view, {.ui = T_JUNK} },
-	{ MODKEY|ShiftMask,   XK_j, tag,  {.ui = T_JUNK} },
+	TAGKEYS(XK_2, T_MAIL),
+	TAGKEYS(XK_3, T_WWW),
+	TAGKEYS(XK_4, T_TERM),
+	TAGKEYS(XK_q, T_COMM),
+	TAGKEYS(XK_w, T_DOC),
+	TAGKEYS(XK_d, T_MISC1),
+	TAGKEYS(XK_e, T_MISC2),
+	TAGKEYS(XK_f, T_CAL),
+	TAGKEYS(XK_j, T_JUNK),
 };
 
 /* button definitions */
