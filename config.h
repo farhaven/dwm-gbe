@@ -21,7 +21,7 @@ static const Bool topbar           = True;     /* False means bottom bar */
 
 /* tagging */
 static const char *tags[] = {
-	"2:mail", "3:www", "4:term", "q:comm", "w:doc", "d", "e", "f:cal"
+	"2:mail", "3:www", "4:term", "q:comm", "w:doc", "d", "e", "f:cal", "junk"
 };
 enum {
 	T_NONE  = 0,
@@ -32,7 +32,8 @@ enum {
 	T_DOC   = 1 << 4,
 	T_MISC1 = 1 << 5,
 	T_MISC2 = 1 << 6,
-	T_CAL   = 1 << 7
+	T_CAL   = 1 << 7,
+	T_JUNK  = 1 << 8
 };
 static const Rule rules[] = {
 	/* class      instance       title    tags mask isfloating monitor */
@@ -87,7 +88,7 @@ static const Layout layouts[] = {
 	{ MODKEY,                       KEY,      toggleview, {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask,           KEY,      view,       {.ui = 1 << TAG} }, \
 	{ MODKEY|ShiftMask,             KEY,      tag,        {.ui = 1 << TAG} }, \
-	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,  {.ui = 1 << TAG} },
+	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,  {.ui = 1 << TAG} }
 
 /* commands */
 /* component of dmenucmd, manipulated in spawn() */
@@ -127,14 +128,17 @@ static Key keys[] = {
 	{ 0,                  XF86XK_AudioPlay, spawn,    MPD_CMD("toggle") },
 	{ 0,                  XF86XK_AudioPrev, spawn,    MPD_CMD("prev") },
 	{ 0,                  XF86XK_AudioNext, spawn,    MPD_CMD("next") },
-	TAGKEYS(              XK_2,                       0)
-	TAGKEYS(              XK_3,                       1)
-	TAGKEYS(              XK_4,                       2)
-	TAGKEYS(              XK_q,                       3)
-	TAGKEYS(              XK_w,                       4)
-	TAGKEYS(              XK_d,                       5)
-	TAGKEYS(              XK_e,                       6)
-	TAGKEYS(              XK_f,                       7)
+	TAGKEYS(XK_2, 0),
+	TAGKEYS(XK_3, 1),
+	TAGKEYS(XK_4, 2),
+	TAGKEYS(XK_q, 3),
+	TAGKEYS(XK_w, 4),
+	TAGKEYS(XK_d, 5),
+	TAGKEYS(XK_e, 6),
+	TAGKEYS(XK_f, 7),
+
+	{ MODKEY,             XK_j, view, {.ui = T_JUNK} },
+	{ MODKEY|ShiftMask,   XK_j, tag,  {.ui = T_JUNK} },
 };
 
 /* button definitions */
