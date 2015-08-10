@@ -827,7 +827,7 @@ drawbar(Monitor *m) {
 	}
 	x = 0;
 	for(i = 0; i < LENGTH(tags); i++) {
-		if (!(occ & 1 << i))
+		if (!((occ & (1 << i)) || (m->tagset[m->seltags] & (1 << i))))
 			continue;
 		w = TEXTW(tags[i], false);
 		drw_setscheme(drw, (m->tagset[m->seltags] & (1 << i)) ?
