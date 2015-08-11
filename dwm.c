@@ -475,7 +475,7 @@ buttonpress(XEvent *e) {
 		}
 		i = x = 0;
 		do {
-			if (!(occ & 1 << i))
+			if (!((occ & 1 << i) || (m->tagset[m->seltags] & (1 << i))))
 				continue;
 			x += TEXTW(tags[i], false);
 		} while(ev->x >= x && ++i < LENGTH(tags));
