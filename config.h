@@ -4,7 +4,12 @@
 /* appearance */
 // static const char font[] = "Droid Sans Mono for Powerline 7.5";
 // static const char font[] = "Terminess Powerline 9";
-static const char font[] = "PragmataPro for Powerline 8";
+static const char font[] = "PragmataPro for Powerline 9";
+#if 0
+static const char normbordercolor[] = "#121212";
+static const char normbgcolor[]     = "#121212";
+static const char normfgcolor[]     = "#ededed";
+#endif
 static const char normbordercolor[] = "#ccc";
 static const char normbgcolor[]     = "#ccc";
 static const char normfgcolor[]     = "#000";
@@ -43,7 +48,7 @@ static const Rule rules[] = {
 	{ "Surf",     NULL,          NULL,    T_WWW,    False,     -1 },
 	{ NULL,       "surf",        NULL,    T_WWW,    False,     -1 },
 	{ "Firefox",  NULL,          NULL,    T_WWW,    False,     -1 },
-	{ "Chrome",   NULL,          NULL,    T_WWW,    False,     -1 },
+	{ "chromium-browser", NULL,  NULL,    T_WWW,    False,     -1 },
 	{ NULL,       "xterm-256color", NULL, T_TERM,   False,     -1 },
 	{ NULL,       "st-256color", NULL,    T_TERM,   False,     -1 },
 	{ NULL,       "irssi",       NULL,    T_COMM,   False,     -1 },
@@ -86,7 +91,7 @@ static const Layout layouts[] = {
 };
 
 /* key definitions */
-#define MODKEY Mod3Mask
+#define MODKEY Mod4Mask
 #define TAGKEYS(KEY,TAG) \
 	{ MODKEY,                       KEY,      toggleview, {.ui = TAG} }, \
 	{ MODKEY|ControlMask,           KEY,      view,       {.ui = TAG} }, \
@@ -126,6 +131,7 @@ static Key keys[] = {
 	{ 0,                  XF86XK_AudioPlay, spawn,    MPD_CMD("toggle") },
 	{ 0,                  XF86XK_AudioPrev, spawn,    MPD_CMD("prev") },
 	{ 0,                  XF86XK_AudioNext, spawn,    MPD_CMD("next") },
+	{ MODKEY,             XK_u,           spawn,      {.v = (char *[]){"clipstuff", "unicode", NULL}}},
 	TAGKEYS(XK_2, T_MAIL),
 	TAGKEYS(XK_3, T_WWW),
 	TAGKEYS(XK_4, T_TERM),
