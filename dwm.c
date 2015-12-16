@@ -41,6 +41,8 @@
 #include <X11/extensions/Xinerama.h>
 #endif /* XINERAMA */
 
+#include <libguile.h>
+
 #include "drw.h"
 #include "util.h"
 
@@ -195,6 +197,8 @@ static void focus(Client *c);
 static void focusin(XEvent *e);
 static void focusmon(const Arg *arg);
 static void focusstack(const Arg *arg);
+static void g_run_conf(const Arg *arg);
+static void *g_init(void *);
 static Atom getatomprop(Client *c, Atom prop);
 static Bool getrootptr(int *x, int *y);
 static long getstate(Window w);
@@ -304,6 +308,9 @@ static Drw *drw;
 static Fnt *fnt;
 static Monitor *mons, *selmon;
 static Window root;
+
+/* Hook for scheme drawbar */
+static SCM g_drawstatus_hook = SCM_UNDEFINED;
 
 /* configuration, allows nested code to access above variables */
 #include "config.h"
@@ -825,6 +832,7 @@ drawbar(Monitor *m) {
 		if(c->isurgent)
 			urg |= c->tags;
 	}
+
 	x = 0;
 	for(i = 0; i < LENGTH(tags); i++) {
 		if (!((occ & (1 << i)) || (m->tagset[m->seltags] & (1 << i))))
@@ -843,16 +851,32 @@ drawbar(Monitor *m) {
 	drw_text(drw, x, 0, w, bh, m->ltsymbol, false, false);
 	x += w;
 	xx = x;
+
 	if(m == selmon) { /* status is only drawn on selected monitor */
-		w = TEXTW(stext, true);
-		x = m->ww - w;
-		if(showsystray)
-			x -= getsystraywidth();
-		if(x < xx) {
-			x = xx;
-			w = m->ww - xx;
+		if (SCM_UNBNDP(g_drawstatus_hook)) {
+			w = TEXTW(stext, true);
+			x = m->ww - w;
+			if(showsystray)
+				x -= getsystraywidth();
+			if(x < xx) {
+				x = xx;
+				w = m->ww - xx;
+			}
+			drw_text(drw, x, 0, w, bh, stext, false, true);
+		} else {
+			/* If we have a scheme hook for drawing the status area, that's cool too */
+			/* API:
+			 * (fn x m->ww) returns x position of drawn text
+			 */
+			SCM newx = scm_call_2(g_drawstatus_hook, scm_from_int(x), scm_from_int(m->ww));
+			if (scm_is_integer(newx) &&
+				 scm_is_true(scm_leq_p(newx, scm_from_int(m->ww))) &&
+				 scm_is_true(scm_geq_p(newx, scm_from_int(0)))) {
+					x = scm_to_int(newx);
+			} else {
+				fprintf(stderr, "Got weird return value from status drawing hook, expected an int between 0 and %d\n", m->ww);
+			}
 		}
-		drw_text(drw, x, 0, w, bh, stext, false, true);
 	} else
 		x = m->ww;
 
@@ -982,6 +1006,56 @@ focusstack(const Arg *arg) {
 
 	focus(c);
 	restack(selmon);
+}
+
+SCM
+g_drw_textw(SCM t) {
+	char *txt = scm_to_utf8_stringn(t, NULL);
+	int rv = TEXTW(txt, false);
+	free(txt);
+	return scm_from_int(rv);
+}
+
+SCM
+g_drw_text(SCM x, SCM w, SCM s_text) {
+	char *txt = scm_to_utf8_stringn(s_text, NULL);
+	drw_text(drw, scm_to_int(x), 0, scm_to_int(w), bh, txt, false, false);
+	free(txt);
+	return SCM_UNSPECIFIED;
+}
+
+SCM
+g_drawstatus_hook_fn(SCM drawfn) {
+	if (SCM_UNBNDP(drawfn))
+		return g_drawstatus_hook;
+	g_drawstatus_hook = drawfn;
+	return SCM_UNSPECIFIED;
+}
+
+SCM
+g_statustext() {
+	return scm_from_utf8_string(stext);
+}
+
+SCM
+g_systraywidth() {
+	return scm_from_uint(getsystraywidth());
+}
+
+void
+g_run_conf(const Arg *arg) {
+	scm_c_primitive_load("/tmp/dwm.scm");
+}
+
+void *
+g_init(void *data) {
+	scm_c_define_gsubr("dwm-drw-textw", 1, 0, 0, &g_drw_textw);
+	scm_c_define_gsubr("dwm-drw-text", 3, 0, 0, &g_drw_text);
+	scm_c_define_gsubr("dwm-status-text", 0, 0, 0, &g_statustext);
+	scm_c_define_gsubr("dwm-systray-width", 0, 0, 0, &g_systraywidth);
+	scm_c_define_gsubr("dwm-hook-drawstatus", 0, 1, 0, g_drawstatus_hook_fn);
+	g_run_conf(NULL);
+	return NULL;
 }
 
 Atom
@@ -1798,6 +1872,9 @@ setup(void) {
 	XSelectInput(dpy, root, wa.event_mask);
 	grabkeys();
 	focus(NULL);
+
+	/* Init guile bindings */
+	scm_with_guile(&g_init, NULL);
 }
 
 void
