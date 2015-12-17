@@ -1056,6 +1056,35 @@ g_statustext() {
 }
 
 SCM
+g_spawn(SCM s_cmd) {
+	Arg arg;
+	char **cmdv;
+	int i, cmdlen;
+
+	if (!scm_is_true(scm_list_p(s_cmd))) {
+		fprintf(stderr, "expected a list\n");
+		return SCM_UNSPECIFIED;
+	}
+
+	cmdlen = scm_to_int(scm_length(s_cmd));
+	cmdv = calloc(cmdlen + 1, sizeof(char*));
+	for (i = 0; i < cmdlen; i++) {
+		cmdv[i] = scm_to_utf8_stringn(scm_list_ref(s_cmd, scm_from_int(i)), NULL);
+	}
+	cmdv[cmdlen] = NULL;
+
+	arg.v = cmdv;
+	spawn(&arg);
+
+	for (i = 0; i < cmdlen; i++) {
+		free(cmdv[i]);
+	}
+	free(cmdv);
+
+	return SCM_UNSPECIFIED;
+}
+
+SCM
 g_systraywidth() {
 	return scm_from_uint(getsystraywidth());
 }
@@ -1089,6 +1118,7 @@ g_init(void *data) {
 	scm_c_define_gsubr("dwm-status-text", 0, 0, 0, g_statustext);
 	scm_c_define_gsubr("dwm-systray-width", 0, 0, 0, g_systraywidth);
 	scm_c_define_gsubr("dwm-hook-drawstatus", 0, 1, 0, g_drawstatus_hook_fn);
+	scm_c_define_gsubr("dwm-spawn", 0, 0, 1, g_spawn);
 	g_run_conf(NULL);
 	return NULL;
 }
