@@ -1070,10 +1070,10 @@ g_run_conf(const Arg *arg) {
 
 void *
 g_init(void *data) {
-	scm_c_define_gsubr("dwm-drw-textw", 1, 0, 0, &g_drw_textw);
-	scm_c_define_gsubr("dwm-drw-text", 3, 0, 0, &g_drw_text);
-	scm_c_define_gsubr("dwm-status-text", 0, 0, 0, &g_statustext);
-	scm_c_define_gsubr("dwm-systray-width", 0, 0, 0, &g_systraywidth);
+	scm_c_define_gsubr("dwm-drw-textw", 1, 0, 0, g_drw_textw);
+	scm_c_define_gsubr("dwm-drw-text", 3, 0, 0, g_drw_text);
+	scm_c_define_gsubr("dwm-status-text", 0, 0, 0, g_statustext);
+	scm_c_define_gsubr("dwm-systray-width", 0, 0, 0, g_systraywidth);
 	scm_c_define_gsubr("dwm-hook-drawstatus", 0, 1, 0, g_drawstatus_hook_fn);
 	g_run_conf(NULL);
 	return NULL;
