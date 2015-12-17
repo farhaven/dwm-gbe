@@ -59,7 +59,7 @@
 #define WIDTH(X)             ((X)->w + 2 * (X)->bw)
 #define HEIGHT(X)            ((X)->h + 2 * (X)->bw)
 #define TAGMASK              ((1 << LENGTH(tags)) - 1)
-#define TEXTW(X, M)          (drw_font_getexts_width(drw, X, strlen(X), M) + bh + 2)
+#define TEXTW(X)             (drw_font_getexts_width(drw, X, strlen(X)) + bh + 2)
 
 #define SYSTEM_TRAY_REQUEST_DOCK    0
 #define _NET_SYSTEM_TRAY_ORIENTATION_HORZ 0
@@ -485,14 +485,14 @@ buttonpress(XEvent *e) {
 		do {
 			if (!((occ & 1 << i) || (m->tagset[m->seltags] & (1 << i))))
 				continue;
-			x += TEXTW(tags[i], false);
+			x += TEXTW(tags[i]);
 		} while(ev->x >= x && ++i < LENGTH(tags));
 		if(i < LENGTH(tags)) {
 			click = ClkTagBar;
 			arg.ui = 1 << i;
 		} else if(ev->x < x + blw)
 			click = ClkLtSymbol;
-		else if(ev->x > selmon->ww - TEXTW(stext, true))
+		else if(ev->x > selmon->ww - TEXTW(stext))
 			click = ClkStatusText;
 		else
 			click = ClkWinTitle;
@@ -838,7 +838,7 @@ drawbar(Monitor *m) {
 	for(i = 0; i < LENGTH(tags); i++) {
 		if (!((occ & (1 << i)) || (m->tagset[m->seltags] & (1 << i))))
 			continue;
-		w = TEXTW(tags[i], false);
+		w = TEXTW(tags[i]);
 		drw_setscheme(drw, (m->tagset[m->seltags] & (1 << i)) ?
 		              &scheme[SchemeSel] : &scheme[SchemeNorm]);
 		drw_text(drw, x, 0, w, bh, tags[i], urg & (1 << i), false);
@@ -847,7 +847,7 @@ drawbar(Monitor *m) {
 		         occ & 1 << i, urg & 1 << i);
 		x += w;
 	}
-	w = blw = TEXTW(m->ltsymbol, false);
+	w = blw = TEXTW(m->ltsymbol);
 	drw_setscheme(drw, &scheme[SchemeNorm]);
 	drw_text(drw, x, 0, w, bh, m->ltsymbol, false, false);
 	x += w;
@@ -855,7 +855,7 @@ drawbar(Monitor *m) {
 
 	if(m == selmon) { /* status is only drawn on selected monitor */
 		if (SCM_UNBNDP(g_drawstatus_hook)) {
-			w = TEXTW(stext, true);
+			w = TEXTW(stext);
 			x = m->ww - w;
 			if(showsystray)
 				x -= getsystraywidth();
@@ -863,7 +863,7 @@ drawbar(Monitor *m) {
 				x = xx;
 				w = m->ww - xx;
 			}
-			drw_text(drw, x, 0, w, bh, stext, false, true);
+			drw_text(drw, x, 0, w, bh, stext, false, false);
 		} else {
 			/* If we have a scheme hook for drawing the status area, that's cool too */
 			/* API:
@@ -1010,17 +1010,31 @@ focusstack(const Arg *arg) {
 }
 
 SCM
-g_drw_textw(SCM t) {
-	char *txt = scm_to_utf8_stringn(t, NULL);
-	int rv = TEXTW(txt, false);
+g_drw_textw(SCM s_txt, SCM simple) {
+	char *txt = scm_to_utf8_stringn(s_txt, NULL);
+	int rv;
+
+	if (SCM_UNBNDP(simple))
+		simple = SCM_BOOL_F;
+
+	if (scm_to_bool(simple)) {
+		rv = drw_font_getexts_width(drw, txt, strlen(txt));
+	} else {
+		rv = TEXTW(txt);
+	}
+
 	free(txt);
 	return scm_from_int(rv);
 }
 
 SCM
-g_drw_text(SCM x, SCM w, SCM s_text) {
+g_drw_text(SCM x, SCM w, SCM s_text, SCM invert, SCM simple) {
 	char *txt = scm_to_utf8_stringn(s_text, NULL);
-	drw_text(drw, scm_to_int(x), 0, scm_to_int(w), bh, txt, false, false);
+	if (SCM_UNBNDP(invert))
+		invert = SCM_BOOL_F;
+	if (SCM_UNBNDP(simple))
+		simple = SCM_BOOL_F;
+	drw_text(drw, scm_to_int(x), 0, scm_to_int(w), bh, txt, scm_to_bool(invert), scm_to_bool(simple));
 	free(txt);
 	return SCM_UNSPECIFIED;
 }
@@ -1070,8 +1084,8 @@ g_run_conf(const Arg *arg) {
 
 void *
 g_init(void *data) {
-	scm_c_define_gsubr("dwm-drw-textw", 1, 0, 0, g_drw_textw);
-	scm_c_define_gsubr("dwm-drw-text", 3, 0, 0, g_drw_text);
+	scm_c_define_gsubr("dwm-drw-textw", 1, 1, 0, g_drw_textw);
+	scm_c_define_gsubr("dwm-drw-text", 3, 2, 0, g_drw_text);
 	scm_c_define_gsubr("dwm-status-text", 0, 0, 0, g_statustext);
 	scm_c_define_gsubr("dwm-systray-width", 0, 0, 0, g_systraywidth);
 	scm_c_define_gsubr("dwm-hook-drawstatus", 0, 1, 0, g_drawstatus_hook_fn);
@@ -1842,7 +1856,7 @@ setup(void) {
 	fnt = drw_font_create(dpy, screen, font);
 	sw = DisplayWidth(dpy, screen);
 	sh = DisplayHeight(dpy, screen);
-	bh = fnt->h + 2;
+	bh = fnt->h;
 	drw = drw_create(dpy, screen, root, sw, sh);
 	drw_setfont(drw, fnt);
 	updategeom();
@@ -1878,9 +1892,6 @@ setup(void) {
 	scheme[SchemeSel].fg = drw_clr_create(drw, selfgcolor);
 	/* init system tray */
 	updatesystray();
-	/* init bars */
-	updatebars();
-	updatestatus();
 	/* EWMH support per view */
 	XChangeProperty(dpy, root, netatom[NetSupported], XA_ATOM, 32,
 			PropModeReplace, (unsigned char *) netatom, NetLast);
@@ -1896,6 +1907,10 @@ setup(void) {
 
 	/* Init guile bindings */
 	scm_with_guile(&g_init, NULL);
+
+	/* init bars */
+	updatebars();
+	updatestatus();
 }
 
 void

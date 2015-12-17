@@ -2,11 +2,6 @@
 #include <stdbool.h>
 
 #include <X11/Xft/Xft.h>
-#include <pango/pango.h>
-#include <pango/pangoxft.h>
-#include <pango/pango-font.h>
-
-#include <locale.h> /* for setlocale */
 
 typedef struct {
 	XftColor rgb;
@@ -21,9 +16,6 @@ typedef struct {
 	int descent;
 	unsigned int h;
 	XftFont *xfont;
-	PangoLayout *plo;
-	PangoContext *ctx;
-	PangoFontDescription *pfd;
 } Fnt;
 
 typedef struct {
@@ -56,8 +48,8 @@ void drw_free(Drw *drw);
 /* Fnt abstraction */
 Fnt *drw_font_create(Display *dpy, int screen, const char *fontname);
 void drw_font_free(Display *dpy, Fnt *font);
-void drw_font_getexts(Drw* drw, const char *text, unsigned int len, Extnts *extnts, bool markup);
-unsigned int drw_font_getexts_width(Drw* drw, const char *text, unsigned int len, bool markup);
+void drw_font_getexts(Drw* drw, const char *text, unsigned int len, Extnts *extnts);
+unsigned int drw_font_getexts_width(Drw* drw, const char *text, unsigned int len);
 
 /* Colour abstraction */
 Clr *drw_clr_create(Drw *drw, const char *clrname);
@@ -73,7 +65,7 @@ void drw_setscheme(Drw *drw, ClrScheme *scheme);
 
 /* Drawing functions */
 void drw_rect(Drw *drw, int x, int y, unsigned int w, unsigned int h, int filled, int empty, int invert);
-void drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, const char *text, bool invert, bool markup);
+void drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, const char *text, bool invert, bool simple);
 
 /* Map functions */
 void drw_map(Drw *drw, Window win, int x, int y, unsigned int w, unsigned int h);

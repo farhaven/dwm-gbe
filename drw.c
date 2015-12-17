@@ -46,24 +46,24 @@ drw_free(Drw *drw) {
 Fnt *
 drw_font_create(Display *dpy, int screen, const char *fontname) {
 	Fnt *font;
-	PangoFontMetrics *metrics;
 
 	font = (Fnt *)calloc(1, sizeof(Fnt));
 	if(!font)
 		return NULL;
 
-	font->ctx = pango_xft_get_context(dpy, screen);
-	font->pfd = pango_font_description_from_string(fontname);
+	font->xfont = XftFontOpenName(dpy, screen, fontname);
+	if (font->xfont == NULL) {
+		fprintf(stderr, "Falling back to fixed font\n");
+		font->xfont = XftFontOpenName(dpy, screen, "fixed");
+	}
+	if (font->xfont == NULL) {
+		free(font);
+		return NULL;
+	}
 
-	metrics = pango_context_get_metrics(font->ctx, font->pfd,
-			pango_language_from_string(setlocale(LC_CTYPE, "")));
-	font->ascent = pango_font_metrics_get_ascent(metrics) / PANGO_SCALE;
-	font->descent = pango_font_metrics_get_descent(metrics) / PANGO_SCALE;
+	font->ascent = font->xfont->ascent;
+	font->descent = font->xfont->descent;
 	font->h = font->ascent + font->descent;
-	pango_font_metrics_unref(metrics);
-
-	font->plo = pango_layout_new(font->ctx);
-	pango_layout_set_font_description(font->plo, font->pfd);
 
 	return font;
 }
@@ -123,7 +123,7 @@ drw_rect(Drw *drw, int x, int y, unsigned int w, unsigned int h, int filled, int
 }
 
 void
-drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, const char *text, bool invert, bool markup) {
+drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, const char *text, bool invert, bool simple) {
 	char buf[256];
 	int i, tx, ty, th, len, olen;
 	Extnts tex;
@@ -137,32 +137,27 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, const char *tex
 		return;
 	olen = strlen(text);
 	th = drw->font->ascent + drw->font->descent;
-	ty = y + (h / 2) - (th / 2);
-	tx = x + (h / 2);
+	ty = y + (h / 2) - (th / 2) + drw->font->ascent;
+	tx = x;
+	if (!simple) {
+		tx += h / 2;
 
-	/* shorten text if necessary */
-	len = MIN(olen, sizeof buf) + 1;
-	do {
-		drw_font_getexts(drw, text, len--, &tex, markup);
-	} while (len && tex.w >= (w - h));
-	if(!len)
-		return;
-	memcpy(buf, text, len);
-	if(len < olen)
-		for(i = len; i && i > len - 3; buf[--i] = '.');
+		/* shorten text if necessary */
+		len = MIN(olen, sizeof buf) + 1;
+		do {
+			drw_font_getexts(drw, text, len--, &tex);
+		} while (len && tex.w >= w);
+		if(!len)
+			return;
+		memcpy(buf, text, len);
+		if(len < olen)
+			for(i = len; i && i > len - 3; buf[--i] = '.');
+	}
 
 	XSetForeground(drw->dpy, drw->gc, (invert? drw->scheme->bg->rgb: drw->scheme->fg->rgb).pixel);
 
 	d = XftDrawCreate(drw->dpy, drw->drawable, DefaultVisual(drw->dpy, drw->screen), DefaultColormap(drw->dpy, drw->screen));
-	if ((!markup) || (!pango_parse_markup(buf, len, 0, NULL, NULL, NULL, NULL))) {
-		pango_layout_set_markup(drw->font->plo, "", 0);
-		pango_layout_set_text(drw->font->plo, buf, len);
-	} else {
-		pango_layout_set_text(drw->font->plo, "", 0);
-		pango_layout_set_markup(drw->font->plo, buf, len);
-	}
-	pango_xft_render_layout(d, &(invert? drw->scheme->bg: drw->scheme->fg)->rgb,
-			drw->font->plo, tx * PANGO_SCALE, ty * PANGO_SCALE);
+	XftDrawStringUtf8(d, &(invert? drw->scheme->bg: drw->scheme->fg)->rgb, drw->font->xfont, tx, ty, (XftChar8*) buf, len);
 	XftDrawDestroy(d);
 }
 
@@ -176,27 +171,20 @@ drw_map(Drw *drw, Window win, int x, int y, unsigned int w, unsigned int h) {
 
 
 void
-drw_font_getexts(Drw* drw, const char *text, unsigned int len, Extnts *tex, bool markup) {
-	PangoRectangle r;
-	if ((!markup) || (!pango_parse_markup(text, len, 0, NULL, NULL, NULL, NULL))) {
-		pango_layout_set_markup(drw->font->plo, "", 0);
-		pango_layout_set_text(drw->font->plo, text, len);
-	} else {
-		pango_layout_set_text(drw->font->plo, "", 0);
-		pango_layout_set_markup(drw->font->plo, text, len);
-	}
-	pango_layout_get_extents(drw->font->plo, &r, 0);
-	tex->w = r.width / PANGO_SCALE;
-	tex->h = r.height / PANGO_SCALE;
+drw_font_getexts(Drw* drw, const char *text, unsigned int len, Extnts *tex) {
+	XGlyphInfo ext;
+	XftTextExtentsUtf8(drw->dpy, drw->font->xfont, (XftChar8*) text, len, &ext);
+	tex->w = ext.xOff;
+	tex->h = ext.yOff;
 }
 
 unsigned int
-drw_font_getexts_width(Drw* drw, const char *text, unsigned int len, bool markup) {
+drw_font_getexts_width(Drw* drw, const char *text, unsigned int len) {
 	Extnts tex;
 
 	if(!drw->font)
 		return -1;
-	drw_font_getexts(drw, text, len, &tex, markup);
+	drw_font_getexts(drw, text, len, &tex);
 	return tex.w;
 }
 
