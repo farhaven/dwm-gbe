@@ -1,3 +1,4 @@
+; See LICENSE file for copyright and license details.
 (use-modules (json))
 
 (define cs-norm (dwm-make-colorscheme "#000" "#ccc"))
