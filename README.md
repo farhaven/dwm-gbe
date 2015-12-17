@@ -69,7 +69,7 @@ This variant of DWM has bindings to GNU Guile 2.0 which are in an embryionic sta
   the right most part of the layout icon, the parameter `w` is the maximum available horizontal space including the tag and layout
   icons. The function returns the x coordinate of the left most pixel it touched. This is an example:
 
-
+```scheme
     (dwm-hook-drawstatus
       (lambda (x w)
         (let* ((s (dwm-status-text))
@@ -77,6 +77,7 @@ This variant of DWM has bindings to GNU Guile 2.0 which are in an embryionic sta
                (sx (- w sw (dwm-systray-width))))
           (dwm-drw-text sx sw s)
           sx)))
+```          
 
 The function `g_run_conf` loads and runs an initial configuration from `~/.dwm.scm`. It can be bound to a key binding to reload the
 configuration.
