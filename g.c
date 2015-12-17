@@ -68,8 +68,6 @@ size_t
 g_ClrScheme_free(SCM s_smob) {
 	struct g_ClrScheme *scm = (struct g_ClrScheme*) SCM_SMOB_DATA(s_smob);
 
-	fprintf(stderr, "freeing color scheme\n");
-
 	drw_clr_free(scm->s->border);
 	drw_clr_free(scm->s->bg);
 	drw_clr_free(scm->s->fg);
