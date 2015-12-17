@@ -13,28 +13,112 @@ extern char stext[256];
 extern Drw *drw;
 extern ClrScheme scheme[SchemeLast];
 
+ClrScheme scheme_now;
+
 /* Hook for scheme drawbar */
 SCM g_drawstatus_hook = SCM_UNDEFINED;
 
+struct g_ClrScheme {
+	ClrScheme *s;
+	SCM update_func;
+	SCM fg;
+	SCM bg;
+	SCM border;
+};
+static scm_t_bits g_ClrScheme_tag;
+
+SCM
+g_make_clrscheme(SCM s_fg, SCM s_bg, SCM s_border) {
+	char *fg, *bg, *border;
+	SCM smob;
+	struct g_ClrScheme *cscm;
+
+	/* parse fg/bg/border */
+	fg = scm_to_utf8_stringn(s_fg, NULL);
+	bg = scm_to_utf8_stringn(s_bg, NULL);
+	if (SCM_UNBNDP(s_border))
+		s_border = scm_from_utf8_string("#000");
+	border = scm_to_utf8_stringn(s_border, NULL);
+
+	cscm = scm_gc_malloc(sizeof(*cscm), "colorscheme");
+	cscm->update_func = SCM_BOOL_F;
+	cscm->s = scm_gc_malloc(sizeof(*cscm->s), "colorscheme wrapped data");
+	cscm->s->border = drw_clr_create(drw, border);
+	cscm->s->bg = drw_clr_create(drw, bg);
+	cscm->s->fg = drw_clr_create(drw, fg);
+	cscm->fg = s_fg;
+	cscm->bg = s_bg;
+	cscm->border = s_border;
+
+	SCM_NEWSMOB(smob, g_ClrScheme_tag, cscm);
+
+	return smob;
+}
+
+SCM
+g_ClrScheme_mark(SCM s_smob) {
+	struct g_ClrScheme *scm = (struct g_ClrScheme*) SCM_SMOB_DATA(s_smob);
+	scm_gc_mark(scm->fg);
+	scm_gc_mark(scm->bg);
+	scm_gc_mark(scm->border);
+	return scm->update_func;
+}
+
+size_t
+g_ClrScheme_free(SCM s_smob) {
+	struct g_ClrScheme *scm = (struct g_ClrScheme*) SCM_SMOB_DATA(s_smob);
+
+	fprintf(stderr, "freeing color scheme\n");
+
+	drw_clr_free(scm->s->border);
+	drw_clr_free(scm->s->bg);
+	drw_clr_free(scm->s->fg);
+
+	scm_gc_free(scm->s, sizeof(*scm->s), "colorscheme wrapped data");
+	scm_gc_free(scm, sizeof(*scm), "colorscheme");
+
+	return 0;
+}
+
+int
+g_ClrScheme_print(SCM s_smob, SCM port, scm_print_state *pstate) {
+	struct g_ClrScheme *scm = (struct g_ClrScheme*) SCM_SMOB_DATA(s_smob);
+
+	scm_puts("#<DWM color scheme bg=", port);
+	scm_display(scm->bg, port);
+	scm_puts(", fg=", port);
+	scm_display(scm->fg, port);
+	scm_puts(", border=", port);
+	scm_display(scm->border, port);
+	scm_puts(">", port);
+	return 1;
+}
+
 SCM
 g_drw_setscheme(SCM colorscheme) {
-	if (!scm_is_symbol(colorscheme)) {
-		/* Raise an exception? */
-		fprintf(stderr, "Expected a symbol\n");
-		return SCM_UNSPECIFIED;
-	}
+	size_t sz;
+	struct g_ClrScheme *scm;
 
-	if (scm_is_eq(colorscheme, scm_from_utf8_symbol("normal"))) {
-		drw_setscheme(drw, &scheme[SchemeNorm]);
-	} else if (scm_is_eq(colorscheme, scm_from_utf8_symbol("selected"))) {
-		drw_setscheme(drw, &scheme[SchemeSel]);
-	} else {
-		/* TODO: raise exception */
-		SCM s_symname = scm_symbol_to_string(colorscheme);
-		char *symname = scm_to_utf8_stringn(s_symname, NULL);
-		fprintf(stderr, "Unknown color scheme symbol: \"%s\"\n", symname);
-		free(symname);
-	}
+	scm_assert_smob_type(g_ClrScheme_tag, colorscheme);
+	scm = (struct g_ClrScheme*) SCM_SMOB_DATA(colorscheme);
+
+	drw_clr_free(scheme_now.border);
+	drw_clr_free(scheme_now.bg);
+	drw_clr_free(scheme_now.fg);
+
+	sz = sizeof(*scheme_now.border);
+	scheme_now.border = calloc(1, sz);
+	scheme_now.bg = calloc(1, sz);
+	scheme_now.fg = calloc(1, sz);
+
+	memcpy(scheme_now.border, scm->s->border, sz);
+	memcpy(scheme_now.bg, scm->s->bg, sz);
+	memcpy(scheme_now.fg, scm->s->fg, sz);
+
+	scm_remember_upto_here_1(colorscheme);
+
+	drw_setscheme(drw, &scheme_now);
+
 	return SCM_UNSPECIFIED;
 }
 
@@ -143,13 +227,24 @@ g_run_conf(const Arg *arg) {
 
 void *
 g_init(void *data) {
+	/* Function bindings */
 	scm_c_define_gsubr("dwm-drw-textw", 1, 1, 0, g_drw_textw);
 	scm_c_define_gsubr("dwm-drw-text", 3, 2, 0, g_drw_text);
 	scm_c_define_gsubr("dwm-status-text", 0, 0, 0, g_statustext);
 	scm_c_define_gsubr("dwm-systray-width", 0, 0, 0, g_systraywidth);
 	scm_c_define_gsubr("dwm-hook-drawstatus", 0, 1, 0, g_drawstatus_hook_fn);
 	scm_c_define_gsubr("dwm-spawn", 0, 0, 1, g_spawn);
-	scm_c_define_gsubr("dwm-drw-setscheme", 1, 0, 0, g_drw_setscheme);
+	scm_c_define_gsubr("dwm-drw-set-colorscheme", 1, 0, 0, g_drw_setscheme);
+
+	/* Set up data structures */
+	memset(&scheme_now, 0x00, sizeof(scheme_now));
+	g_ClrScheme_tag = scm_make_smob_type("colorscheme", sizeof(struct g_ClrScheme));
+	scm_set_smob_mark(g_ClrScheme_tag, g_ClrScheme_mark);
+	scm_set_smob_free(g_ClrScheme_tag, g_ClrScheme_free);
+	scm_set_smob_print(g_ClrScheme_tag, g_ClrScheme_print);
+	scm_c_define_gsubr("dwm-make-colorscheme", 2, 1, 0, g_make_clrscheme);
+
+	/* Finally, run user configuration */
 	g_run_conf(NULL);
 	return NULL;
 }

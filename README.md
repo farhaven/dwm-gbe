@@ -65,6 +65,9 @@ This variant of DWM has bindings to GNU Guile 2.0 which are in an embryionic sta
   maximum. If the text were longer, it is shortened and `...` is appended. If `invert` is `#t` (defaults to `#f`), the text is drawn
   with foreground and background color switched. If `simple` is `#t` (defaults to `#f`), there is no additional border space inside
   the drawn space.
+* `dwm-make-colorscheme fg bg [border]` can be used to create an opaque color scheme to pass to `dwm-drw-set-colorscheme`. If
+  `border` is ommitted, `"#000"` is assumed. All colors are hex strings.
+* `dwm-drw-set-colorscheme s` can be used to set the current color scheme to `s`.
 * `dwm-hook-drawstatus fn` registers `fn` with signature `(x w) -> x` as a function that draws the status area. The parameter `x` is
   the right most part of the layout icon, the parameter `w` is the maximum available horizontal space including the tag and layout
   icons. The function returns the x coordinate of the left most pixel it touched. This is an example:
