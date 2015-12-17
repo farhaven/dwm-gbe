@@ -78,6 +78,9 @@ This variant of DWM has bindings to GNU Guile 2.0 which are in an embryionic sta
       sx)))
   ```
 
+The function `g_run_conf` loads and runs an initial configuration from `~/.dwm.scm`. It can be bound to a key binding to reload the
+configuration.
+
 Differences from suckless.org's DWM
 -----------------------------------
 This DWM is a bit different from the one that can be found on suckless.org. It's based on suckless DWM 6.0 with these changes:
