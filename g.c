@@ -243,6 +243,7 @@ g_init(void *data) {
 	scm_c_define_gsubr("dwm-make-colorscheme", 2, 1, 0, g_make_clrscheme);
 
 	/* Finally, run user configuration */
+	scm_setlocale(scm_variable_ref(scm_c_lookup("LC_ALL")), scm_from_locale_string(""));
 	g_run_conf(NULL);
 	return NULL;
 }
