@@ -29,6 +29,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <X11/cursorfont.h>
@@ -1044,7 +1045,24 @@ g_systraywidth() {
 
 void
 g_run_conf(const Arg *arg) {
-	scm_c_primitive_load("/tmp/dwm.scm");
+	char *tmp, *home;
+	struct stat sbuf;
+
+	if ((home = getenv("HOME")) == NULL) {
+		fprintf(stderr, "Looks like we're homeless :(\n");
+		return;
+	}
+
+	(void) asprintf(&tmp, "%s/.dwm.scm", getenv("HOME"));
+
+	if (stat(tmp, &sbuf) != 0) {
+		fprintf(stderr, "Can't access %s: %s\n", tmp, strerror(errno));
+		free(tmp);
+		return;
+	}
+
+	scm_c_primitive_load(tmp);
+	free(tmp);
 }
 
 void *
