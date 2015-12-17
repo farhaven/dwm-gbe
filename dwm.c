@@ -1010,6 +1010,28 @@ focusstack(const Arg *arg) {
 }
 
 SCM
+g_drw_setscheme(SCM colorscheme) {
+	if (!scm_is_symbol(colorscheme)) {
+		/* Raise an exception? */
+		fprintf(stderr, "Expected a symbol\n");
+		return SCM_UNSPECIFIED;
+	}
+
+	if (scm_is_eq(colorscheme, scm_from_utf8_symbol("normal"))) {
+		drw_setscheme(drw, &scheme[SchemeNorm]);
+	} else if (scm_is_eq(colorscheme, scm_from_utf8_symbol("selected"))) {
+		drw_setscheme(drw, &scheme[SchemeSel]);
+	} else {
+		/* TODO: raise exception */
+		SCM s_symname = scm_symbol_to_string(colorscheme);
+		char *symname = scm_to_utf8_stringn(s_symname, NULL);
+		fprintf(stderr, "Unknown color scheme symbol: \"%s\"\n", symname);
+		free(symname);
+	}
+	return SCM_UNSPECIFIED;
+}
+
+SCM
 g_drw_textw(SCM s_txt, SCM simple) {
 	char *txt = scm_to_utf8_stringn(s_txt, NULL);
 	int rv;
@@ -1119,6 +1141,7 @@ g_init(void *data) {
 	scm_c_define_gsubr("dwm-systray-width", 0, 0, 0, g_systraywidth);
 	scm_c_define_gsubr("dwm-hook-drawstatus", 0, 1, 0, g_drawstatus_hook_fn);
 	scm_c_define_gsubr("dwm-spawn", 0, 0, 1, g_spawn);
+	scm_c_define_gsubr("dwm-drw-setscheme", 1, 0, 0, g_drw_setscheme);
 	g_run_conf(NULL);
 	return NULL;
 }
