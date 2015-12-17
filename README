@@ -50,13 +50,42 @@ Configuration
 The configuration of dwm is done by creating a custom config.h
 and (re)compiling the source code.
 
+Guile bindings
+--------------
+This variant of DWM has bindings to GNU Guile 2.0 which are in an embryionic state at the moment. At startup, DWM executes
+`~/.dwm.scm` if it exists. The following functions are available to Guile:
+
+* `dwm-spawn` for spawning external commands:
+  `(dwm-spawn "notify-send" "foobar")`
+* `dwm-status-text` returns the name of the root window which is to be set as the status bar text
+* `dwm-drw-textw txt [simple #f]` returns the widths in pixels the text `txt` would occupy if drawn using the current font. If the
+  optional parameter `simple` is set to `#t` (defaults to `#f`), the returned width does not include additional border space.
+* `dwm-systray-width` returns the width required to draw the systray icons.
+* `dwm-drw-text x w txt [invert #f] [simple #f]` draws the text `txt` at x-offset `x`, so that it occupies `w` pixels at the
+  maximum. If the text were longer, it is shortened and `...` is appended. If `invert` is `#t` (defaults to `#f`), the text is drawn
+  with foreground and background color switched. If `simple` is `#t` (defaults to `#f`), there is no additional border space inside
+  the drawn space.
+* `dwm-hook-drawstatus fn` registers `fn` with signature `(x w) -> x` as a function that draws the status area. The parameter `x` is
+  the right most part of the layout icon, the parameter `w` is the maximum available horizontal space including the tag and layout
+  icons. The function returns the x coordinate of the left most pixel it touched. This is an example:
+  ```
+  (dwm-hook-drawstatus
+   (lambda (x w)
+    (let* ((s (dwm-status-text))
+           (sw (dwm-drw-textw s))
+           (sx (- w sw (dwm-systray-width))))
+      (dwm-drw-text sx sw s)
+      sx)))
+  ```
 
 Differences from suckless.org's DWM
 -----------------------------------
 This DWM is a bit different from the one that can be found on suckless.org. It's based on suckless DWM 6.0 with these changes:
 
-* XFT and pango instead of X bitmap fonts. This means you can use pango markup for e.g. bold status text
+* XFT instead of X bitmap fonts. This means unicode support and antialiased fonts
 * Small changes to the TEXTW macro to make box sizes symmetric and prevent overdraw of text, for example for long window names
 * The `push` patch has been merged into dwm.c
 * The `systray` patch has been integrated
+* The status bar is exactly as high as required by the font
+* There are prototype bindings to guile.
 * Some small cleanups around the code
