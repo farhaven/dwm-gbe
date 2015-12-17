@@ -1027,6 +1027,9 @@ g_drw_text(SCM x, SCM w, SCM s_text) {
 
 SCM
 g_drawstatus_hook_fn(SCM drawfn) {
+	/* XXX: Use guile hooks
+	 * https://www.gnu.org/software/guile/manual/html_node/Hooks.html
+	 */
 	if (SCM_UNBNDP(drawfn))
 		return g_drawstatus_hook;
 	g_drawstatus_hook = drawfn;
