@@ -152,6 +152,10 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, const char *tex
 		memcpy(buf, text, len);
 		if(len < olen)
 			for(i = len; i && i > len - 3; buf[--i] = '.');
+	} else {
+		len = MIN(olen, sizeof buf);
+		memset(buf, 0x00, sizeof(buf));
+		memcpy(buf, text, len);
 	}
 
 	XSetForeground(drw->dpy, drw->gc, (invert? drw->scheme->bg->rgb: drw->scheme->fg->rgb).pixel);
