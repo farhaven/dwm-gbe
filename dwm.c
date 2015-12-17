@@ -852,9 +852,12 @@ drawbar(Monitor *m) {
 		} else {
 			/* If we have a scheme hook for drawing the status area, that's cool too */
 			/* API:
-			 * (fn x m->ww) returns x position of drawn text
+			 * (fn x m->ww (m->sel != NULL)) returns x position of drawn text
 			 */
-			SCM newx = scm_call_2(g_drawstatus_hook, scm_from_int(x), scm_from_int(m->ww));
+			SCM newx = scm_call_3(g_drawstatus_hook,
+					scm_from_int(x),
+					scm_from_int(m->ww),
+					scm_from_bool(m->sel != NULL));
 			if (scm_is_integer(newx) &&
 				 scm_is_true(scm_leq_p(newx, scm_from_int(m->ww))) &&
 				 scm_is_true(scm_geq_p(newx, scm_from_int(0)))) {

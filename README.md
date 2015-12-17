@@ -68,13 +68,14 @@ This variant of DWM has bindings to GNU Guile 2.0 which are in an embryionic sta
 * `dwm-make-colorscheme fg bg [border]` can be used to create an opaque color scheme to pass to `dwm-drw-set-colorscheme`. If
   `border` is ommitted, `"#000"` is assumed. All colors are hex strings.
 * `dwm-drw-set-colorscheme s` can be used to set the current color scheme to `s`.
-* `dwm-hook-drawstatus fn` registers `fn` with signature `(x w) -> x` as a function that draws the status area. The parameter `x` is
-  the right most part of the layout icon, the parameter `w` is the maximum available horizontal space including the tag and layout
-  icons. The function returns the x coordinate of the left most pixel it touched. This is an example:
+* `dwm-hook-drawstatus fn` registers `fn` with signature `(x w s) -> x` as a function that draws the status area. The parameter `x`
+  is the right most part of the layout icon, the parameter `w` is the maximum available horizontal space including the tag and
+  layout icons. If the parameter `s` is true, then the selected client is on the screen for which the bar will be redrawn. The
+  function returns the x coordinate of the left most pixel it touched. This is an example:
 
 ```scheme
     (dwm-hook-drawstatus
-      (lambda (x w)
+      (lambda (x w sel)
         (let* ((s (dwm-status-text))
                (sw (dwm-drw-textw s))
                (sx (- w sw (dwm-systray-width))))
