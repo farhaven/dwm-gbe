@@ -878,7 +878,7 @@ drawbar(Monitor *m) {
 			drw_text(drw, x, 0, w, bh, m->sel->name, false, false);
 			drw_rect(drw, x, 0, w, bh, m->sel->isfixed, m->sel->isfloating, 0);
 		} else {
-			drw_setscheme(drw, &scheme[SchemeNorm]);
+			drw_setscheme(drw, &scheme[SchemeSel]);
 			drw_text(drw, x, 0, w, bh, NULL, false, false);
 		}
 	}
