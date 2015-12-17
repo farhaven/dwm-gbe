@@ -115,7 +115,7 @@ drw_rect(Drw *drw, int x, int y, unsigned int w, unsigned int h, int filled, int
 	if(!drw || !drw->font || !drw->scheme)
 		return;
 	XSetForeground(drw->dpy, drw->gc, (invert? drw->scheme->bg->rgb: drw->scheme->fg->rgb).pixel);
-	dx = (drw->font->ascent + drw->font->descent + 2) / 4;
+	dx = (drw->font->ascent + drw->font->descent) / 4;
 	if(filled)
 		XFillRectangle(drw->dpy, drw->drawable, drw->gc, x+1, y+1, dx+1, dx+1);
 	else if(empty)
