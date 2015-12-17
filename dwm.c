@@ -875,7 +875,8 @@ drawbar(Monitor *m) {
 				 scm_is_true(scm_geq_p(newx, scm_from_int(0)))) {
 					x = scm_to_int(newx);
 			} else {
-				fprintf(stderr, "Got weird return value from status drawing hook, expected an int between 0 and %d\n", m->ww);
+				fprintf(stderr,
+						"Got weird return value from status drawing hook, expected an int between 0 and %d\n", m->ww);
 			}
 		}
 	} else
@@ -1113,6 +1114,7 @@ g_systraywidth() {
 
 void
 g_run_conf(const Arg *arg) {
+	/* TODO: handle exceptions while loading */
 	char *tmp, *home;
 	struct stat sbuf;
 
