@@ -156,7 +156,6 @@ static Button buttons[] = {
 	{ ClkWinTitle,   0,         Button1, focusstack,     {.i = -1} },
 	{ ClkWinTitle,   0,         Button2, zoom,           {0} },
 	{ ClkWinTitle,   0,         Button3, focusstack,     {.i = 1 } },
-	{ ClkStatusText, 0,         Button2, killclient,     {0} },
 	{ ClkStatusText, 0,         Button1, spawn,          {.v = termcmd } },
 
 	{ ClkClientWin,  MODKEY,    Button1, movemouse,      {0} },
