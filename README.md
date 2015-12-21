@@ -1,6 +1,6 @@
-dwm - dynamic window manager
+dwm-gbe - dynamic window manager
 ============================
-dwm is an extremely fast, small, and dynamic window manager for X.
+dwm-gbe is an extremely fast, small, and dynamic window manager for X, forked from suckless.org's excellent dwm window manager.
 
 
 Requirements
@@ -52,8 +52,8 @@ and (re)compiling the source code.
 
 Guile bindings
 --------------
-This variant of DWM has bindings to GNU Guile 2.0 which are in an embryionic state at the moment. At startup, DWM executes
-`~/.dwm.scm` if it exists. The following functions are available to Guile:
+This variant of dwm has bindings to GNU Guile 2.0 which are in an embryionic state at the moment. At startup, dwm executes
+`~/.dwm-gbe.scm` if it exists. The following functions are available to Guile:
 
 * `dwm-spawn` for spawning external commands:
   `(dwm-spawn "notify-send" "foobar")`
@@ -83,12 +83,12 @@ This variant of DWM has bindings to GNU Guile 2.0 which are in an embryionic sta
           sx)))
 ```          
 
-The function `g_run_conf` loads and runs an initial configuration from `~/.dwm.scm`. It can be bound to a key binding to reload the
+The function `g_run_conf` loads and runs an initial configuration from `~/.dwm-gbe.scm`. It can be bound to a key binding to reload the
 configuration.
 
-Differences from suckless.org's DWM
+Differences from suckless.org's dwm
 -----------------------------------
-This DWM is a bit different from the one that can be found on suckless.org. It's based on suckless DWM 6.0 with these changes:
+This dwm is a bit different from the one that can be found on suckless.org. It's based on suckless dwm 6.0 with these changes:
 
 * XFT instead of X bitmap fonts. This means unicode support and antialiased fonts
 * Small changes to the TEXTW macro to make box sizes symmetric and prevent overdraw of text, for example for long window names

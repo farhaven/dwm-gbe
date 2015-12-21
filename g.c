@@ -211,7 +211,7 @@ g_run_conf(const Arg *arg) {
 		return;
 	}
 
-	(void) asprintf(&tmp, "%s/.dwm.scm", getenv("HOME"));
+	(void) asprintf(&tmp, "%s/.dwm-gbe.scm", getenv("HOME"));
 
 	if (stat(tmp, &sbuf) != 0) {
 		fprintf(stderr, "Can't access %s: %s\n", tmp, strerror(errno));
