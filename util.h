@@ -10,8 +10,6 @@ typedef union {
 	const void *v;
 } Arg;
 
-void die(const char *errstr, ...);
-
 /* Functions from dwm.c */
 void spawn(const Arg *arg);
 unsigned int getsystraywidth();

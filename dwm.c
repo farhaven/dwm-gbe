@@ -20,6 +20,7 @@
  *
  * To understand everything else, start reading main().
  */
+#include <err.h>
 #include <errno.h>
 #include <locale.h>
 #include <stdarg.h>
@@ -580,7 +581,7 @@ clientmessage(XEvent *e) {
 		/* add systray icons */
 		if(cme->data.l[1] == SYSTEM_TRAY_REQUEST_DOCK) {
 			if(!(c = (Client *)calloc(1, sizeof(Client))))
-				die("fatal: could not malloc() %u bytes\n", sizeof(Client));
+				errx(1, "fatal: could not malloc() %lu bytes", sizeof(Client));
 			c->win = cme->data.l[2];
 			c->mon = selmon;
 			c->next = systray->icons;
@@ -745,7 +746,7 @@ createmon(void) {
 	Monitor *m;
 
 	if(!(m = (Monitor *)calloc(1, sizeof(Monitor))))
-		die("fatal: could not malloc() %u bytes\n", sizeof(Monitor));
+		errx(1, "fatal: could not malloc() %lu bytes\n", sizeof(Monitor));
 	m->tagset[0] = m->tagset[1] = 0;
 	m->mfact = mfact;
 	m->nmaster = nmaster;
@@ -1177,7 +1178,7 @@ manage(Window w, XWindowAttributes *wa) {
 	XWindowChanges wc;
 
 	if(!(c = calloc(1, sizeof(Client))))
-		die("fatal: could not malloc() %u bytes\n", sizeof(Client));
+		errx(1, "fatal: could not malloc() %lu bytes\n", sizeof(Client));
 	c->win = w;
 	updatetitle(c);
 	if(XGetTransientForHint(dpy, w, &trans) && (t = wintoclient(trans))) {
@@ -1843,7 +1844,7 @@ showhide(Client *c) {
 void
 sigchld(int unused) {
 	if(signal(SIGCHLD, sigchld) == SIG_ERR)
-		die("Can't install SIGCHLD handler");
+		errx(1, "Can't install SIGCHLD handler");
 	while(0 < waitpid(-1, NULL, WNOHANG));
 }
 
@@ -2083,7 +2084,7 @@ updategeom(void) {
 		for(n = 0, m = mons; m; m = m->next, n++);
 		/* only consider unique geometries as separate screens */
 		if(!(unique = (XineramaScreenInfo *)malloc(sizeof(XineramaScreenInfo) * nn)))
-			die("fatal: could not malloc() %u bytes\n", sizeof(XineramaScreenInfo) * nn);
+			errx(1, "fatal: could not malloc() %lu bytes", sizeof(XineramaScreenInfo) * nn);
 		for(i = 0, j = 0; i < nn; i++)
 			if(isuniquegeom(unique, j, &info[i]))
 				memcpy(&unique[j++], &info[i], sizeof(XineramaScreenInfo));
@@ -2282,7 +2283,7 @@ updatesystray(void) {
 	if(!systray) {
 		/* init systray */
 		if(!(systray = (Systray *)calloc(1, sizeof(Systray))))
-			die("fatal: could not malloc() %u bytes\n", sizeof(Systray));
+			errx(1, "fatal: could not malloc() %lu bytes", sizeof(Systray));
 		systray->win = XCreateSimpleWindow(dpy, root, x, selmon->by, w, bh, 0, 0, scheme[SchemeSel].bg->rgb.pixel);
 		wa.event_mask        = ButtonPressMask | ExposureMask;
 		wa.override_redirect = True;
@@ -2431,7 +2432,7 @@ xerrordummy(Display *dpy, XErrorEvent *ee) {
  * is already running. */
 int
 xerrorstart(Display *dpy, XErrorEvent *ee) {
-	die("dwm: another window manager is already running\n");
+	errx(1, "dwm: another window manager is already running");
 	return -1;
 }
 
@@ -2449,14 +2450,15 @@ zoom(const Arg *arg) {
 
 int
 main(int argc, char *argv[]) {
-	if(argc == 2 && !strcmp("-v", argv[1]))
-		die("dwm-"VERSION", © 2006-2014 dwm engineers, see LICENSE for details\n");
-	else if(argc != 1)
-		die("usage: dwm [-v]\n");
+	if(argc == 2 && !strcmp("-v", argv[1])) {
+		fprintf(stderr, "dwm-"VERSION", © 2006-2014 dwm engineers, see LICENSE for details\n");
+		return 0;
+	} else if(argc != 1)
+		errx(1, "usage: dwm [-v]");
 	if(!setlocale(LC_CTYPE, "") || !XSupportsLocale())
 		fputs("warning: no locale support\n", stderr);
 	if(!(dpy = XOpenDisplay(NULL)))
-		die("dwm: cannot open display\n");
+		errx(1, "dwm: cannot open display");
 	checkotherwm();
 	setup();
 	scan();

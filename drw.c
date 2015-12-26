@@ -1,4 +1,5 @@
 /* See LICENSE file for copyright and license details. */
+#include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -86,7 +87,7 @@ drw_clr_create(Drw *drw, const char *clrname) {
 		return NULL;
 	cmap = DefaultColormap(drw->dpy, drw->screen);
 	if(!XftColorAllocName(drw->dpy, DefaultVisual(drw->dpy, drw->screen), cmap, clrname, &color))
-		die("error, cannot allocate color '%s'\n", clrname);
+		errx(1, "error, cannot allocate color '%s'", clrname);
 	clr->rgb = color;
 	return clr;
 }
