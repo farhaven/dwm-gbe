@@ -814,25 +814,39 @@ drawbar(Monitor *m) {
 	Client *c;
 
 	resizebarwin(m);
+
+	x = 0;
+
 	for(c = m->clients; c; c = c->next) {
 		occ |= c->tags;
 		if(c->isurgent)
 			urg |= c->tags;
 	}
 
-	x = 0;
-	for(i = 0; i < LENGTH(tags); i++) {
-		if (!((occ & (1 << i)) || (m->tagset[m->seltags] & (1 << i))))
-			continue;
-		w = TEXTW(tags[i]);
-		drw_setscheme(drw, (m->tagset[m->seltags] & (1 << i)) ?
-		              &scheme[SchemeSel] : &scheme[SchemeNorm]);
-		drw_text(drw, x, 0, w, bh, tags[i], urg & (1 << i), false);
-		drw_rect(drw, x, 0, w, bh,
-		         m == selmon && selmon->sel && selmon->sel->tags & 1 << i,
-		         occ & 1 << i, urg & 1 << i);
-		x += w;
+	if (SCM_UNBNDP(g_tag_hook_draw)) {
+		for(i = 0; i < LENGTH(tags); i++) {
+			if (!((occ & (1 << i)) || (m->tagset[m->seltags] & (1 << i))))
+				continue;
+			w = TEXTW(tags[i]);
+			drw_setscheme(drw, (m->tagset[m->seltags] & (1 << i)) ?
+					&scheme[SchemeSel] : &scheme[SchemeNorm]);
+			drw_text(drw, x, 0, w, bh, tags[i], urg & (1 << i), false);
+			drw_rect(drw, x, 0, w, bh,
+					m == selmon && selmon->sel && selmon->sel->tags & 1 << i,
+					occ & 1 << i, urg & 1 << i);
+			x += w;
+		}
+	} else {
+		SCM newx = scm_call_3(g_tag_hook_draw,
+				scm_from_uint(m->tagset[m->seltags]),
+				scm_from_uint(occ),
+				scm_from_uint(urg));
+		if (scm_is_integer(newx))
+			x = scm_to_int(newx);
+		else
+			fprintf(stderr, "Got a weird return!\n");
 	}
+
 	w = blw = TEXTW(m->ltsymbol);
 	drw_setscheme(drw, &scheme[SchemeNorm]);
 	drw_text(drw, x, 0, w, bh, m->ltsymbol, false, false);

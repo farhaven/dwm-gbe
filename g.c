@@ -18,6 +18,10 @@ ClrScheme scheme_now;
 /* Hook for scheme drawbar */
 SCM g_drawstatus_hook = SCM_UNDEFINED;
 
+/* Hook for scheme tag drawing/mapping */
+SCM g_tag_hook_draw = SCM_UNDEFINED;
+SCM g_tag_hook_map  = SCM_UNDEFINED;
+
 struct g_ClrScheme {
 	ClrScheme *s;
 	SCM update_func;
@@ -27,7 +31,7 @@ struct g_ClrScheme {
 };
 static scm_t_bits g_ClrScheme_tag;
 
-SCM
+static SCM
 g_make_clrscheme(SCM s_fg, SCM s_bg, SCM s_border) {
 	char *fg, *bg, *border;
 	SCM smob;
@@ -55,7 +59,7 @@ g_make_clrscheme(SCM s_fg, SCM s_bg, SCM s_border) {
 	return smob;
 }
 
-SCM
+static SCM
 g_ClrScheme_mark(SCM s_smob) {
 	struct g_ClrScheme *scm = (struct g_ClrScheme*) SCM_SMOB_DATA(s_smob);
 	scm_gc_mark(scm->fg);
@@ -64,7 +68,7 @@ g_ClrScheme_mark(SCM s_smob) {
 	return scm->update_func;
 }
 
-size_t
+static size_t
 g_ClrScheme_free(SCM s_smob) {
 	struct g_ClrScheme *scm = (struct g_ClrScheme*) SCM_SMOB_DATA(s_smob);
 
@@ -78,7 +82,7 @@ g_ClrScheme_free(SCM s_smob) {
 	return 0;
 }
 
-int
+static int
 g_ClrScheme_print(SCM s_smob, SCM port, scm_print_state *pstate) {
 	struct g_ClrScheme *scm = (struct g_ClrScheme*) SCM_SMOB_DATA(s_smob);
 
@@ -92,7 +96,7 @@ g_ClrScheme_print(SCM s_smob, SCM port, scm_print_state *pstate) {
 	return 1;
 }
 
-SCM
+static SCM
 g_drw_setscheme(SCM colorscheme) {
 	size_t sz;
 	struct g_ClrScheme *scm;
@@ -120,7 +124,7 @@ g_drw_setscheme(SCM colorscheme) {
 	return SCM_UNSPECIFIED;
 }
 
-SCM
+static SCM
 g_drw_textw(SCM s_txt, SCM simple) {
 	char *txt = scm_to_utf8_stringn(s_txt, NULL);
 	int rv;
@@ -138,7 +142,7 @@ g_drw_textw(SCM s_txt, SCM simple) {
 	return scm_from_int(rv);
 }
 
-SCM
+static SCM
 g_drw_text(SCM x, SCM w, SCM s_text, SCM invert, SCM simple) {
 	char *txt = scm_to_utf8_stringn(s_text, NULL);
 	if (SCM_UNBNDP(invert))
@@ -150,7 +154,7 @@ g_drw_text(SCM x, SCM w, SCM s_text, SCM invert, SCM simple) {
 	return SCM_UNSPECIFIED;
 }
 
-SCM
+static SCM
 g_drawstatus_hook_fn(SCM drawfn) {
 	/* XXX: Use guile hooks
 	 * https://www.gnu.org/software/guile/manual/html_node/Hooks.html
@@ -161,12 +165,27 @@ g_drawstatus_hook_fn(SCM drawfn) {
 	return SCM_UNSPECIFIED;
 }
 
-SCM
+static SCM
+g_tags_hook(SCM drawfn, SCM mapfn) {
+	if (SCM_UNBNDP(drawfn) && SCM_UNBNDP(mapfn))
+		return SCM_UNSPECIFIED; /* XXX */
+
+	if (!SCM_UNBNDP(drawfn))
+		g_tag_hook_draw = drawfn;
+	if (!SCM_UNBNDP(mapfn))
+		g_tag_hook_map = mapfn;
+
+	printf("Set up a hook for tag drawing/mapping\n");
+
+	return SCM_UNSPECIFIED;
+}
+
+static SCM
 g_statustext() {
 	return scm_from_utf8_string(stext);
 }
 
-SCM
+static SCM
 g_spawn(SCM s_cmd) {
 	Arg arg;
 	char **cmdv;
@@ -195,7 +214,7 @@ g_spawn(SCM s_cmd) {
 	return SCM_UNSPECIFIED;
 }
 
-SCM
+static SCM
 g_systraywidth() {
 	return scm_from_uint(getsystraywidth());
 }
@@ -231,6 +250,7 @@ g_init(void *data) {
 	scm_c_define_gsubr("dwm-status-text", 0, 0, 0, g_statustext);
 	scm_c_define_gsubr("dwm-systray-width", 0, 0, 0, g_systraywidth);
 	scm_c_define_gsubr("dwm-hook-drawstatus", 0, 1, 0, g_drawstatus_hook_fn);
+	scm_c_define_gsubr("dwm-hook-tags", 0, 2, 0, g_tags_hook);
 	scm_c_define_gsubr("dwm-spawn", 0, 0, 1, g_spawn);
 	scm_c_define_gsubr("dwm-drw-set-colorscheme", 1, 0, 0, g_drw_setscheme);
 
