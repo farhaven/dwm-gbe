@@ -5,11 +5,6 @@
 // static const char font[] = "Droid Sans Mono for Powerline 7.5";
 // static const char font[] = "Terminess Powerline 9";
 static const char font[] = "PragmataPro for Powerline:size=9";
-#if 0
-static const char normbordercolor[] = "#121212";
-static const char normbgcolor[]     = "#121212";
-static const char normfgcolor[]     = "#ededed";
-#endif
 static const char normbordercolor[] = "#ccc";
 static const char normbgcolor[]     = "#ccc";
 static const char normfgcolor[]     = "#000";
@@ -44,7 +39,7 @@ static const Rule rules[] = {
 	/* class      instance       title    tags mask isfloating monitor */
 	{ "Gimp",     NULL,          NULL,    T_MISC1,  False,     -1 },
 	{ "Xmessage", NULL,          NULL,    T_NONE,   True,      -1 },
-	{ NULL,       "mutt",        NULL,    T_MAIL,   False,     -1 },
+	{ NULL,       NULL,          "mutt",  T_MAIL,   False,     -1 },
 	{ "Firefox",  NULL,          NULL,    T_WWW,    False,     -1 },
 	{ "chromium-browser", NULL,  NULL,    T_WWW,    False,     -1 },
 	{ "xterm-256color", NULL,    NULL,    T_TERM,   False,     -1 },
@@ -61,10 +56,11 @@ static const Rule rules[] = {
 	{ NULL,       "transmission-gtk", NULL,T_MISC1, False,     -1 },
 	{ NULL,       NULL,          "LibreOffice", T_DOC, False,  -1 },
 	{ "XClock",   NULL,          NULL,    T_NONE,   True,      -1 },
+	{ "Toplevel", NULL,          NULL,    T_NONE,   True,      -1 },
 	{ "Tkremind", NULL,          NULL,    T_CAL,    False,     -1 },
 	{ "XConsole", NULL,          NULL,    T_MISC2,  False,     -1 },
 	{ "MPlayer",  NULL,          NULL,    T_MISC2,  True,      -1 },
-	{ "mpv",      NULL,          NULL,    T_MISC2,  True,      -1 },
+	{ "mpv",      NULL,          NULL,    T_MISC2,  False,     -1 },
 	{ "Vlc",      NULL,          NULL,    T_MISC2,  False,     -1 },
 	{ "Inkscape", NULL,          NULL,    T_MISC2,  False,     -1 },
 	{ NULL,       NULL,          "glxgears", T_NONE,True,      -1 },
