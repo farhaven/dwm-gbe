@@ -17,10 +17,10 @@
 
 /* Missing:
 	dwm-spawn
-	dwm-drw-set-colorscheme
  */
 
 lua_State *globalL = NULL;
+ClrScheme *l_scheme = NULL;
 
 extern char stext[256];
 extern int bh;
@@ -31,6 +31,7 @@ static int l_u_systray_width(lua_State*);
 static int l_u_status_text(lua_State*);
 static int l_u_drawstatus(lua_State*);
 static int l_u_drw_text(lua_State*);
+static int l_u_drw_setscheme(lua_State*);
 
 struct luaL_Reg libfuncs[] = {
 	{ "drw_textw", l_u_drw_textw },
@@ -38,8 +39,65 @@ struct luaL_Reg libfuncs[] = {
 	{ "systray_width", l_u_systray_width },
 	{ "status_text", l_u_status_text },
 	{ "drawstatus", l_u_drawstatus },
+	{ "drw_setscheme", l_u_drw_setscheme },
 	{ NULL, NULL }
 };
+
+static int
+l_u_drw_setscheme(lua_State *L) {
+	ClrScheme *newscheme;
+	const char *border, *fg, *bg;
+
+	if (lua_gettop(L) != 1)
+		luaL_error(L, "Expected exactly one argument");
+	if (!lua_istable(L, -1))
+		luaL_error(L, "Expected a table");
+
+	lua_pushliteral(L, "border");
+	lua_gettable(L, 1);
+	typeassert(L, -1, string);
+	border = lua_tolstring(L, -1, NULL);
+
+	lua_pushliteral(L, "bg");
+	lua_gettable(L, 1);
+	typeassert(L, -1, string);
+	bg = lua_tolstring(L, -1, NULL);
+
+	lua_pushliteral(L, "fg");
+	lua_gettable(L, 1);
+	typeassert(L, -1, string);
+	fg = lua_tolstring(L, -1, NULL);
+
+	newscheme = calloc(1, sizeof(*newscheme));
+	if (!newscheme) {
+		return luaL_error(L, "Can't allocate new color scheme");
+	}
+	newscheme->border = drw_clr_create(drw, border);
+	if (!newscheme->border) {
+		return luaL_error(L, "Can't allocate border color");
+	}
+	newscheme->bg = drw_clr_create(drw, bg);
+	if (!newscheme->bg) {
+		return luaL_error(L, "Can't allocate bg color");
+	}
+	newscheme->fg = drw_clr_create(drw, fg);
+	if (!newscheme->fg) {
+		return luaL_error(L, "Can't allocate fg color");
+	}
+
+	/* Clean up previously set scheme */
+	if (l_scheme) {
+		drw_clr_free(l_scheme->border);
+		drw_clr_free(l_scheme->bg);
+		drw_clr_free(l_scheme->fg);
+		free(l_scheme);
+	}
+
+	l_scheme = newscheme;
+	drw_setscheme(drw, newscheme);
+
+	return 0;
+}
 
 static int
 l_u_drawstatus(lua_State *L) {
@@ -95,7 +153,6 @@ l_u_drw_text(lua_State *L) {
 		simple = lua_toboolean(L, 5);
 	}
 
-	printf("Drawing text '%s' @%d %d\n", txt, x, w);
 	drw_text(drw, x, 0, w, bh, txt, invert, simple);
 	return 0;
 }
