@@ -3,7 +3,7 @@
 
 include config.mk
 
-SRC = drw.c dwm.c g.c
+SRC = drw.c dwm.c l.c
 OBJ = ${SRC:.c=.o}
 
 all: options dwm-gbe

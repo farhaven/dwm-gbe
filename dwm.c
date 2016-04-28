@@ -43,11 +43,9 @@
 #include <X11/extensions/Xinerama.h>
 #endif /* XINERAMA */
 
-#include <libguile.h>
-
 #include "drw.h"
 #include "util.h"
-#include "g.h"
+#include "l.h"
 
 /* macros */
 #define BUTTONMASK           (ButtonPressMask|ButtonReleaseMask)
@@ -823,28 +821,17 @@ drawbar(Monitor *m) {
 			urg |= c->tags;
 	}
 
-	if (SCM_UNBNDP(g_tag_hook_draw)) {
-		for(i = 0; i < LENGTH(tags); i++) {
-			if (!((occ & (1 << i)) || (m->tagset[m->seltags] & (1 << i))))
-				continue;
-			w = TEXTW(tags[i]);
-			drw_setscheme(drw, (m->tagset[m->seltags] & (1 << i)) ?
-					&scheme[SchemeSel] : &scheme[SchemeNorm]);
-			drw_text(drw, x, 0, w, bh, tags[i], urg & (1 << i), false);
-			drw_rect(drw, x, 0, w, bh,
-					m == selmon && selmon->sel && selmon->sel->tags & 1 << i,
-					occ & 1 << i, urg & 1 << i);
-			x += w;
-		}
-	} else {
-		SCM newx = scm_call_3(g_tag_hook_draw,
-				scm_from_uint(m->tagset[m->seltags]),
-				scm_from_uint(occ),
-				scm_from_uint(urg));
-		if (scm_is_integer(newx))
-			x = scm_to_int(newx);
-		else
-			fprintf(stderr, "Got a weird return!\n");
+	for(i = 0; i < LENGTH(tags); i++) {
+		if (!((occ & (1 << i)) || (m->tagset[m->seltags] & (1 << i))))
+			continue;
+		w = TEXTW(tags[i]);
+		drw_setscheme(drw, (m->tagset[m->seltags] & (1 << i)) ?
+				&scheme[SchemeSel] : &scheme[SchemeNorm]);
+		drw_text(drw, x, 0, w, bh, tags[i], urg & (1 << i), false);
+		drw_rect(drw, x, 0, w, bh,
+				m == selmon && selmon->sel && selmon->sel->tags & 1 << i,
+				occ & 1 << i, urg & 1 << i);
+		x += w;
 	}
 
 	w = blw = TEXTW(m->ltsymbol);
@@ -854,7 +841,7 @@ drawbar(Monitor *m) {
 	xx = x;
 
 	if(m == selmon) { /* status is only drawn on selected monitor */
-		if (SCM_UNBNDP(g_drawstatus_hook)) {
+		if (!l_have_status_drawfn()) {
 			w = TEXTW(stext);
 			x = m->ww - w;
 			if(showsystray)
@@ -868,18 +855,11 @@ drawbar(Monitor *m) {
 			/* If we have a scheme hook for drawing the status area, that's cool too */
 			/* API:
 			 * (fn x m->ww (m->sel != NULL)) returns x position of drawn text
+			 * negative values indicate errors
 			 */
-			SCM newx = scm_call_3(g_drawstatus_hook,
-					scm_from_int(x),
-					scm_from_int(m->ww),
-					scm_from_bool(m->sel != NULL));
-			if (scm_is_integer(newx) &&
-				 scm_is_true(scm_leq_p(newx, scm_from_int(m->ww))) &&
-				 scm_is_true(scm_geq_p(newx, scm_from_int(0)))) {
-					x = scm_to_int(newx);
-			} else {
-				fprintf(stderr,
-						"Got weird return value from status drawing hook, expected an int between 0 and %d\n", m->ww);
+			int newx = l_call_status_drawfn(x, m->ww, m->sel != NULL);
+			if (newx >= 0 && newx <= m->ww) {
+				x = newx;
 			}
 		}
 	} else
@@ -1832,8 +1812,7 @@ setup(void) {
 	grabkeys();
 	focus(NULL);
 
-	/* Init guile bindings */
-	scm_with_guile(&g_init, NULL);
+	l_init();
 
 	/* init bars */
 	updatebars();

@@ -15,8 +15,8 @@ XINERAMALIBS  = -lXinerama
 XINERAMAFLAGS = -DXINERAMA
 
 # includes and libs
-INCS = `guile2-config compile`
-LIBS = `guile2-config link`
+INCS = `pkg-config --cflags lua53`
+LIBS = `pkg-config --libs lua53`
 
 INCS += -I${X11INC} `pkg-config --cflags xft`
 LIBS += -L${X11LIB} -lX11 ${XINERAMALIBS} `pkg-config --libs xft`
