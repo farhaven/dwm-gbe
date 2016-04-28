@@ -259,7 +259,10 @@ l_call_status_drawfn(int x, int mw, int sel) {
 	lua_pushinteger(globalL, mw);
 	lua_pushboolean(globalL, sel);
 
-	lua_call(globalL, 3, 1); /* XXX: pcall */
+	if (lua_pcall(globalL, 3, 1, 0) != LUA_OK) {
+		fprintf(stderr, "%s\n", lua_tolstring(globalL, -1, NULL));
+		return -1;
+	}
 
 	if (!lua_isnumber(globalL, -1)) {
 		fprintf(stderr, "Got weird return from Lua drawfn: %s, expected a number\n",
