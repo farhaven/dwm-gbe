@@ -16,9 +16,6 @@
 	}
 
 /* Missing:
-	dwm-drw-textw
-	dwm-drw-text
-	dwm-hook-tags
 	dwm-spawn
 	dwm-drw-set-colorscheme
  */
@@ -220,4 +217,3 @@ l_call_status_drawfn(int x, int mw, int sel) {
 
 	return res;
 }
-
