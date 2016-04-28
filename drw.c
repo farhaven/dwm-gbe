@@ -86,8 +86,10 @@ drw_clr_create(Drw *drw, const char *clrname) {
 	if(!clr)
 		return NULL;
 	cmap = DefaultColormap(drw->dpy, drw->screen);
-	if(!XftColorAllocName(drw->dpy, DefaultVisual(drw->dpy, drw->screen), cmap, clrname, &color))
-		errx(1, "error, cannot allocate color '%s'", clrname);
+	if(!XftColorAllocName(drw->dpy, DefaultVisual(drw->dpy, drw->screen), cmap, clrname, &color)) {
+		warnx("error, cannot allocate color '%s'", clrname);
+		return NULL;
+	}
 	clr->rgb = color;
 	return clr;
 }
