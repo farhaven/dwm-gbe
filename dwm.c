@@ -852,9 +852,9 @@ drawbar(Monitor *m) {
 			}
 			drw_text(drw, x, 0, w, bh, stext, false, false);
 		} else {
-			/* If we have a scheme hook for drawing the status area, that's cool too */
-			/* API:
-			 * (fn x m->ww (m->sel != NULL)) returns x position of drawn text
+			/* If we have a Lua hook for drawing the status area, that's cool too.
+			 * API:
+			 * fn(x, m->ww, (m->sel != NULL)); returns x position of drawn text
 			 * negative values indicate errors
 			 */
 			int newx = l_call_status_drawfn(x, m->ww, m->sel != NULL);
