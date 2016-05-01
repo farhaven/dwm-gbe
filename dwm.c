@@ -119,11 +119,6 @@ typedef struct {
 	const Arg arg;
 } Key;
 
-typedef struct {
-	const char *symbol;
-	void (*arrange)(Monitor *);
-} Layout;
-
 struct Monitor {
 	char ltsymbol[16];
 	float mfact;
@@ -142,7 +137,6 @@ struct Monitor {
 	Client *stack;
 	Monitor *next;
 	Window barwin;
-	const Layout *lt[2];
 };
 
 typedef struct {
@@ -200,7 +194,6 @@ static void killclient(const Arg *arg);
 static void manage(Window w, XWindowAttributes *wa);
 static void mappingnotify(XEvent *e);
 static void maprequest(XEvent *e);
-static void monocle(Monitor *m);
 static void motionnotify(XEvent *e);
 static void movemouse(const Arg *arg);
 static Client *nexttiled(Client *c);
@@ -223,14 +216,12 @@ static void sendmon(Client *c, Monitor *m);
 static void setclientstate(Client *c, long state);
 static void setfocus(Client *c);
 static void setfullscreen(Client *c, Bool fullscreen);
-static void setlayout(const Arg *arg);
 static void setmfact(const Arg *arg);
 static void setup(void);
 static void showhide(Client *c);
 static void sigchld(int unused);
 static void tag(const Arg *arg);
 static void tagmon(const Arg *arg);
-static void tile(Monitor *);
 static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
 static void toggletag(const Arg *arg);
@@ -375,7 +366,7 @@ applysizehints(Client *c, int *x, int *y, int *w, int *h, Bool interact) {
 		*h = bh;
 	if(*w < bh)
 		*w = bh;
-	if(resizehints || c->isfloating || !c->mon->lt[c->mon->sellt]->arrange) {
+	if(resizehints || c->isfloating) {
 		/* see last two sentences in ICCCM 4.1.2.3 */
 		baseismin = c->basew == c->minw && c->baseh == c->minh;
 		if(!baseismin) { /* temporarily remove base dimensions */
@@ -429,9 +420,27 @@ arrange(Monitor *m) {
 
 void
 arrangemon(Monitor *m) {
-	strncpy(m->ltsymbol, m->lt[m->sellt]->symbol, sizeof m->ltsymbol);
-	if(m->lt[m->sellt]->arrange)
-		m->lt[m->sellt]->arrange(m);
+	unsigned int i, n, h, mw, my, ty;
+	Client *c;
+
+	for(n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
+	if(n == 0)
+		return;
+
+	if(n > m->nmaster)
+		mw = m->nmaster ? m->ww * m->mfact : 0;
+	else
+		mw = m->ww;
+	for(i = my = ty = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++)
+		if(i < m->nmaster) {
+			h = (m->wh - my) / (MIN(n, m->nmaster) - i);
+			resize(c, m->wx, m->wy + my, mw - (2*c->bw), h - (2*c->bw), False);
+			my += HEIGHT(c);
+		} else {
+			h = (m->wh - ty) / (n - i);
+			resize(c, m->wx + mw, m->wy + ty, m->ww - mw - (2*c->bw), h - (2*c->bw), False);
+			ty += HEIGHT(c);
+		}
 }
 
 void
@@ -506,11 +515,9 @@ checkotherwm(void) {
 void
 cleanup(void) {
 	Arg a = {.ui = ~0};
-	Layout foo = { "", NULL };
 	Monitor *m;
 
 	view(&a);
-	selmon->lt[selmon->sellt] = &foo;
 	for(m = mons; m; m = m->next) {
 		while(m->stack)
 			unmanage(m->stack, False);
@@ -693,7 +700,7 @@ configurerequest(XEvent *e) {
 	if((c = wintoclient(ev->window))) {
 		if(ev->value_mask & CWBorderWidth)
 			c->bw = ev->border_width;
-		else if(c->isfloating || !selmon->lt[selmon->sellt]->arrange) {
+		else if(c->isfloating) {
 			m = c->mon;
 			if(ev->value_mask & CWX) {
 				c->oldx = c->x;
@@ -750,9 +757,6 @@ createmon(void) {
 	m->nmaster = nmaster;
 	m->showbar = showbar;
 	m->topbar = topbar;
-	m->lt[0] = &layouts[0];
-	m->lt[1] = &layouts[1 % LENGTH(layouts)];
-	strncpy(m->ltsymbol, layouts[0].symbol, sizeof m->ltsymbol);
 	return m;
 }
 
@@ -833,12 +837,6 @@ drawbar(Monitor *m) {
 				occ & 1 << i, urg & 1 << i);
 		x += w;
 	}
-
-	w = blw = TEXTW(m->ltsymbol);
-	drw_setscheme(drw, &scheme[SchemeNorm]);
-	drw_text(drw, x, 0, w, bh, m->ltsymbol, false, false);
-	x += w;
-	xx = x;
 
 	if(m == selmon) { /* status is only drawn on selected monitor */
 		if (!l_have_status_drawfn()) {
@@ -1260,22 +1258,6 @@ maprequest(XEvent *e) {
 }
 
 void
-monocle(Monitor *m) {
-	unsigned int n = 0;
-	Client *c;
-
-	for(c = m->clients; c; c = c->next) {
-		if(ISVISIBLE(c))
-			n++;
-	}
-
-	if(n > 0) /* override layout symbol */
-		snprintf(m->ltsymbol, sizeof m->ltsymbol, "[%d]", n);
-	for(c = nexttiled(m->clients); c; c = nexttiled(c->next))
-		resize(c, m->wx, m->wy, m->ww - 2 * c->bw, m->wh - 2 * c->bw, False);
-}
-
-void
 motionnotify(XEvent *e) {
 	static Monitor *mon = NULL;
 	Monitor *m;
@@ -1336,11 +1318,11 @@ movemouse(const Arg *arg) {
 					ny = selmon->wy;
 				else if(abs((selmon->wy + selmon->wh) - (ny + HEIGHT(c))) < snap)
 					ny = selmon->wy + selmon->wh - HEIGHT(c);
-				if(!c->isfloating && selmon->lt[selmon->sellt]->arrange
+				if(!c->isfloating
 				   && (abs(nx - c->x) > snap || abs(ny - c->y) > snap))
 					togglefloating(NULL);
 			}
-			if(!selmon->lt[selmon->sellt]->arrange || c->isfloating)
+			if(c->isfloating)
 				resize(c, nx, ny, c->w, c->h, True);
 			break;
 		}
@@ -1529,11 +1511,11 @@ resizemouse(const Arg *arg) {
 			   && c->mon->wx + nw <= selmon->wx + selmon->ww
 			   && c->mon->wy + nh >= selmon->wy
 			   && c->mon->wy + nh <= selmon->wy + selmon->wh) {
-				if(!c->isfloating && selmon->lt[selmon->sellt]->arrange
+				if(!c->isfloating
 				   && (abs(nw - c->w) > snap || abs(nh - c->h) > snap))
 					togglefloating(NULL);
 			}
-			if(!selmon->lt[selmon->sellt]->arrange || c->isfloating)
+			if(c->isfloating)
 				resize(c, c->x, c->y, nw, nh, True);
 			break;
 		}
@@ -1569,16 +1551,14 @@ restack(Monitor *m) {
 	drawbar(m);
 	if(!m->sel)
 		return;
-	if(m->sel->isfloating || !m->lt[m->sellt]->arrange)
+	if(m->sel->isfloating)
 		XRaiseWindow(dpy, m->sel->win);
-	if(m->lt[m->sellt]->arrange) {
-		wc.stack_mode = Below;
-		wc.sibling = m->barwin;
-		for(c = m->stack; c; c = c->snext) {
-			if(!c->isfloating && ISVISIBLE(c)) {
-				XConfigureWindow(dpy, c->win, CWSibling|CWStackMode, &wc);
-				wc.sibling = c->win;
-			}
+	wc.stack_mode = Below;
+	wc.sibling = m->barwin;
+	for(c = m->stack; c; c = c->snext) {
+		if(!c->isfloating && ISVISIBLE(c)) {
+			XConfigureWindow(dpy, c->win, CWSibling|CWStackMode, &wc);
+			wc.sibling = c->win;
 		}
 	}
 	XSync(dpy, False);
@@ -1723,25 +1703,12 @@ setfullscreen(Client *c, Bool fullscreen) {
 	}
 }
 
-void
-setlayout(const Arg *arg) {
-	if(!arg || !arg->v || arg->v != selmon->lt[selmon->sellt])
-		selmon->sellt ^= 1;
-	if(arg && arg->v)
-		selmon->lt[selmon->sellt] = (Layout *)arg->v;
-	strncpy(selmon->ltsymbol, selmon->lt[selmon->sellt]->symbol, sizeof selmon->ltsymbol);
-	if(selmon->sel)
-		arrange(selmon);
-	else
-		drawbar(selmon);
-}
-
 /* arg > 1.0 will set mfact absolutly */
 void
 setmfact(const Arg *arg) {
 	float f;
 
-	if(!arg || !selmon->lt[selmon->sellt]->arrange)
+	if(!arg)
 		return;
 	f = arg->f < 1.0 ? arg->f + selmon->mfact : arg->f - 1.0;
 	if(f < 0.1 || f > 0.9)
@@ -1825,7 +1792,7 @@ showhide(Client *c) {
 		return;
 	if(ISVISIBLE(c)) { /* show clients top down */
 		XMoveWindow(dpy, c->win, c->x, c->y);
-		if((!c->mon->lt[c->mon->sellt]->arrange || c->isfloating) && !c->isfullscreen)
+		if(c->isfloating && !c->isfullscreen)
 			resize(c, c->x, c->y, c->w, c->h, False);
 		showhide(c->snext);
 	} else { /* hide clients bottom up */
@@ -1876,31 +1843,6 @@ tagmon(const Arg *arg) {
 	if(!selmon->sel || !mons->next)
 		return;
 	sendmon(selmon->sel, dirtomon(arg->i));
-}
-
-void
-tile(Monitor *m) {
-	unsigned int i, n, h, mw, my, ty;
-	Client *c;
-
-	for(n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
-	if(n == 0)
-		return;
-
-	if(n > m->nmaster)
-		mw = m->nmaster ? m->ww * m->mfact : 0;
-	else
-		mw = m->ww;
-	for(i = my = ty = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++)
-		if(i < m->nmaster) {
-			h = (m->wh - my) / (MIN(n, m->nmaster) - i);
-			resize(c, m->wx, m->wy + my, mw - (2*c->bw), h - (2*c->bw), False);
-			my += HEIGHT(c);
-		} else {
-			h = (m->wh - ty) / (n - i);
-			resize(c, m->wx + mw, m->wy + ty, m->ww - mw - (2*c->bw), h - (2*c->bw), False);
-			ty += HEIGHT(c);
-		}
 }
 
 void
@@ -2433,7 +2375,7 @@ void
 zoom(const Arg *arg) {
 	Client *c = selmon->sel;
 
-	if(!selmon->lt[selmon->sellt]->arrange || (selmon->sel && selmon->sel->isfloating))
+	if(selmon->sel && selmon->sel->isfloating)
 		return;
 	if(c == nexttiled(selmon->clients))
 		if(!c || !(c = nexttiled(c->next)))

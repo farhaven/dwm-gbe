@@ -67,17 +67,10 @@ static const Rule rules[] = {
 	{ NULL,       NULL,          "livestream", T_MISC2, True,  -1 }
 };
 
-/* layout(s) */
+/* layout */
 static const float mfact      = 0.58;
 static const int nmaster      = 1;
 static const Bool resizehints = False;
-
-static const Layout layouts[] = {
-	/* symbol     arrange function */
-	{ "[]=",      tile },    /* first entry is default */
-	{ "[M]",      monocle },
-	{ "><>",      NULL },    /* no layout function means floating behavior */
-};
 
 /* key definitions */
 #define MODKEY Mod4Mask
@@ -138,10 +131,6 @@ static Key keys[] = {
  * or ClkRootWin */
 static Button buttons[] = {
 	/* click         event mask button   function        argument */
-	{ ClkLtSymbol,   0,         Button1, setlayout,      {.v = &layouts[0]} },
-	{ ClkLtSymbol,   0,         Button2, setlayout,      {.v = &layouts[1]} },
-	{ ClkLtSymbol,   0,         Button3, setlayout,      {.v = &layouts[2]} },
-
 	{ ClkWinTitle,   0,         Button1, focusstack,     {.i = -1} },
 	{ ClkWinTitle,   0,         Button2, zoom,           {0} },
 	{ ClkWinTitle,   0,         Button3, focusstack,     {.i = 1 } },
