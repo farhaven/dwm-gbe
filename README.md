@@ -50,40 +50,47 @@ Configuration
 The configuration of dwm is done by creating a custom config.h
 and (re)compiling the source code.
 
-Guile bindings
---------------
-This variant of dwm has bindings to GNU Guile 2.0 which are in an embryionic state at the moment. At startup, dwm executes
-`~/.dwm-gbe.scm` if it exists. The following functions are available to Guile:
+Lua bindings
+------------
+This variant of dwm has bindings to Lua 5.3 which are in an embryionic state
+at the moment. At startup, dwm executes `~/.dwm-gbe.lua` if it exists. The
+following functions are available to Lua:
 
-* `dwm-spawn` for spawning external commands:
-  `(dwm-spawn "notify-send" "foobar")`
-* `dwm-status-text` returns the name of the root window which is to be set as the status bar text
-* `dwm-drw-textw txt [simple #f]` returns the widths in pixels the text `txt` would occupy if drawn using the current font. If the
-  optional parameter `simple` is set to `#t` (defaults to `#f`), the returned width does not include additional border space.
-* `dwm-systray-width` returns the width required to draw the systray icons.
-* `dwm-drw-text x w txt [invert #f] [simple #f]` draws the text `txt` at x-offset `x`, so that it occupies `w` pixels at the
-  maximum. If the text were longer, it is shortened and `...` is appended. If `invert` is `#t` (defaults to `#f`), the text is drawn
-  with foreground and background color switched. If `simple` is `#t` (defaults to `#f`), there is no additional border space inside
-  the drawn space.
-* `dwm-make-colorscheme fg bg [border]` can be used to create an opaque color scheme to pass to `dwm-drw-set-colorscheme`. If
-  `border` is ommitted, `"#000"` is assumed. All colors are hex strings.
-* `dwm-drw-set-colorscheme s` can be used to set the current color scheme to `s`.
-* `dwm-hook-drawstatus fn` registers `fn` with signature `(x w s) -> x` as a function that draws the status area. The parameter `x`
-  is the right most part of the layout icon, the parameter `w` is the maximum available horizontal space including the tag and
-  layout icons. If the parameter `s` is true, then the selected client is on the screen for which the bar will be redrawn. The
-  function returns the x coordinate of the left most pixel it touched. This is an example:
+* `dwm.status_text` returns the name of the root window. This is what will be
+  printed on the right of the status bar in regular DWM.
+* `dwm.drw_textw txt [simple=false]` returns the widths in pixels the text
+  `txt` would occupy if drawn using the current font. If the optional parameter
+  `simple` is set to `false` (defaults to `false`), the returned width does not
+  include additional border space.
+* `dwm.systray_width` returns the width required to draw the systray icons.
+* `dwm.drw_text x w txt [invert=false] [simple=false]` draws the text `txt` at
+  x-offset `x`, so that it occupies `w` pixels at the maximum. If the text were
+  longer, it is shortened and `...` is appended. If `invert` is `true` (defaults
+  to `false`), the text is drawn with foreground and background color switched.
+  If `simple` is `true` (defaults to `false`), there is no additional border
+  space inside the drawn space.
+* `dwm.drw_setscheme {["bg"]=bg, ["fg"]=fg, ["border"]=border}` sets the
+  current color scheme to the specified colors. If `border` is omitted, "#000"
+  is assumed. Colors are hex-strings.
+* `dwm.drawstatus fn` registers `fn` with signature `(x w s) -> x` as a function
+  that draws the status area. The parameter `x` is the right most part of the
+  layout icon, the parameter `w` is the maximum available horizontal space
+  including the tag and layout icons. If the parameter `s` is true, then the
+  selected client is on the screen for which the bar will be redrawn. The
+  function returns the x coordinate of the left most pixel it touched. This is
+  an example:
 
-```scheme
-    (dwm-hook-drawstatus
-      (lambda (x w sel)
-        (let* ((s (dwm-status-text))
-               (sw (dwm-drw-textw s))
-               (sx (- w sw (dwm-systray-width))))
-          (dwm-drw-text sx sw s)
-          sx)))
-```          
+```lua
+    dwm.drawstatus(function (x w sel)
+        local s = dwm.status_text()
+        local sw = dwm.drw_textw(s)
+        local sx = w - sw - dwm.systray_width()
+        dwm.drw_text(sx, sw, s)
+    end)
+```
 
-The function `g_run_conf` loads and runs an initial configuration from `~/.dwm-gbe.scm`. It can be bound to a key binding to reload the
+The function `l_loadconfig` loads and runs an initial configuration from
+`~/.dwm-gbe.lua`. It can be bound to a key binding to reload the
 configuration.
 
 Differences from suckless.org's dwm
@@ -95,5 +102,5 @@ This dwm is a bit different from the one that can be found on suckless.org. It's
 * The `push` patch has been merged into dwm.c
 * The `systray` patch has been integrated
 * The status bar is exactly as high as required by the font
-* There are prototype bindings to guile.
+* There are prototype bindings to Lua 5.3.
 * Some small cleanups around the code

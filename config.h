@@ -101,9 +101,7 @@ static Key keys[] = {
 	/* modifier           key             function    argument */
 	{ MODKEY,             XK_Return,      spawn,      {.v = termcmd } },
 	{ MODKEY,             XK_l,           spawn,      {.v = lockcmd } },
-#if 0
-	{ MODKEY | ShiftMask, XK_l,           g_run_conf, {0} },
-#endif
+	{ MODKEY | ShiftMask, XK_l,           l_loadconfig, {0} },
 	{ MODKEY,             XK_b,           togglebar,  {0} },
 	{ MODKEY,             XK_Down,        focusstack, {.i = +1 } },
 	{ MODKEY,             XK_Up,          focusstack, {.i = -1 } },

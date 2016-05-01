@@ -49,14 +49,20 @@ l_u_drw_setscheme(lua_State *L) {
 	const char *border, *fg, *bg;
 
 	if (lua_gettop(L) != 1)
-		luaL_error(L, "Expected exactly one argument");
+		return luaL_error(L, "Expected exactly one argument");
 	if (!lua_istable(L, -1))
-		luaL_error(L, "Expected a table");
+		return luaL_error(L, "Expected a table");
 
 	lua_pushliteral(L, "border");
 	lua_gettable(L, 1);
-	typeassert(L, -1, string);
-	border = lua_tolstring(L, -1, NULL);
+	if (lua_isnil(L, -1)) {
+		border = "#000";
+	} else if (lua_isstring(L, -1)) {
+		border = lua_tolstring(L, -1, NULL);
+	} else {
+		return luaL_error(L, "Expected a string or no value for \"border\", got a %s",
+		                  lua_typename(L, lua_type(L, -1)));
+	}
 
 	lua_pushliteral(L, "bg");
 	lua_gettable(L, 1);
@@ -200,33 +206,41 @@ l_open_lib(lua_State *L) {
 }
 
 void
-l_init() {
+l_loadconfig() {
 	char *confname;
 
-	lua_State *L = luaL_newstate();
-	if (!L) {
-		err(1, NULL);
+	if (!globalL) {
+		l_init();
+		return;
 	}
-
-	luaL_openlibs(L);
-
-	luaL_requiref(L, "dwm", l_open_lib, 1);
 
 	/* Load config */
 	(void) asprintf(&confname, "%s/.dwm-gbe.lua", getenv("HOME"));
 
-	if (luaL_dofile(L, confname)) {
-		if (lua_gettop(L) >= 1 && lua_isstring(L, -1)) {
-			printf("%s\n", lua_tolstring(L, -1, NULL));
+	if (luaL_dofile(globalL, confname)) {
+		if (lua_gettop(globalL) >= 1 && lua_isstring(globalL, -1)) {
+			printf("%s\n", lua_tolstring(globalL, -1, NULL));
 		} else {
 			printf("%s: something went wrong, but I don't have an error message.", confname);
-			printf("\t%d things are on  the stack\n", lua_gettop(L));
+			printf("\t%d things are on  the stack\n", lua_gettop(globalL));
 		}
 	}
 
 	free(confname);
+}
 
+void
+l_init() {
+	lua_State *L = luaL_newstate();
+	if (!L) {
+		err(1, NULL);
+	}
 	globalL = L;
+
+	luaL_openlibs(L);
+	luaL_requiref(L, "dwm", l_open_lib, 1);
+
+	l_loadconfig();
 }
 
 int
