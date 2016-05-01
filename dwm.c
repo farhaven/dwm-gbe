@@ -84,8 +84,8 @@ enum { NetSupported, NetSystemTray, NetSystemTrayOP, NetSystemTrayOrientation,
 	NetWMWindowTypeDialog, NetClientList, NetLast }; /* EWMH atoms */
 enum { Manager, Xembed, XembedInfo, XLast }; /* Xembed atoms */
 enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast }; /* default atoms */
-enum { ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle,
-       ClkClientWin, ClkRootWin, ClkLast }; /* clicks */
+enum { ClkTagBar, ClkStatusText, ClkWinTitle, ClkClientWin, ClkRootWin,
+       ClkLast }; /* clicks */
 
 typedef struct {
 	unsigned int click;
@@ -483,9 +483,7 @@ buttonpress(XEvent *e) {
 		if(i < LENGTH(tags)) {
 			click = ClkTagBar;
 			arg.ui = 1 << i;
-		} else if(ev->x < x + blw)
-			click = ClkLtSymbol;
-		else if(ev->x > selmon->ww - TEXTW(stext))
+		} else if(ev->x > selmon->ww - TEXTW(stext))
 			click = ClkStatusText;
 		else
 			click = ClkWinTitle;
