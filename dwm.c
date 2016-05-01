@@ -838,6 +838,8 @@ drawbar(Monitor *m) {
 		x += w;
 	}
 
+	xx = x;
+
 	if(m == selmon) { /* status is only drawn on selected monitor */
 		if (!l_have_status_drawfn()) {
 			w = TEXTW(stext);
