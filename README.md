@@ -54,26 +54,26 @@ This variant of dwm-gbe has bindings to Lua 5.3 which are in an embryionic state
 at the moment. At startup, dwm-gbe executes `~/.dwm-gbe.lua` if it exists. The
 following functions are available to Lua:
 
-* `dwm.status_text` returns the name of the root window. This is what will be
+* `dwm.status.text` returns the name of the root window. This is what will be
   printed on the right of the status bar in regular DWM.
-* `dwm.drw_textw txt [simple=false]` returns the widths in pixels the text
+* `dwm.drw.textw txt [simple=false]` returns the widths in pixels the text
   `txt` would occupy if drawn using the current font. If the optional parameter
   `simple` is set to `false` (defaults to `false`), the returned width does not
   include additional border space.
 * `dwm.systray_width` returns the width required to draw the systray icons.
-* `dwm.drw_text x w txt [invert=false] [simple=false]` draws the text `txt` at
+* `dwm.drw.text x w txt [invert=false] [simple=false]` draws the text `txt` at
   x-offset `x`, so that it occupies `w` pixels at the maximum. If the text were
   longer, it is shortened and `...` is appended. If `invert` is `true` (defaults
   to `false`), the text is drawn with foreground and background color switched.
   If `simple` is `true` (defaults to `false`), there is no additional border
   space inside the drawn space.
-* `dwm.drw_setscheme {["bg"]=bg, ["fg"]=fg, ["border"]=border}` sets the
+* `dwm.drw.setscheme {["bg"]=bg, ["fg"]=fg, ["border"]=border}` sets the
   current color scheme to the specified colors. If `border` is omitted, "#000"
   is assumed. Colors are hex-strings.
-* `dwm.keypress mods key fn` registers `fn` with signature `(mods key)` as a key
+* `dwm.keys.press mods key fn` registers `fn` with signature `(mods key)` as a key
   handler for `key` if `mods` are pressed. Passing `nil` instead of a function unregisters
   the key press handler.
-* `dwm.drawstatus fn` registers `fn` with signature `(x w s) -> x` as a function
+* `dwm.status.draw fn` registers `fn` with signature `(x w s) -> x` as a function
   that draws the status area. The parameter `x` is the right most part of the
   layout icon, the parameter `w` is the maximum available horizontal space
   including the tag and layout icons. If the parameter `s` is true, then the
@@ -82,11 +82,11 @@ following functions are available to Lua:
   an example:
 
 ```lua
-    dwm.drawstatus(function (x w sel)
-        local s = dwm.status_text()
-        local sw = dwm.drw_textw(s)
+    dwm.status.draw(function (x w sel)
+        local s = dwm.status.text()
+        local sw = dwm.drw.textw(s)
         local sx = w - sw - dwm.systray_width()
-        dwm.drw_text(sx, sw, s)
+        dwm.drw.text(sx, sw, s)
         return sx
     end)
 ```

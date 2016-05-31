@@ -19,10 +19,6 @@
 		                  lua_typename(L, lua_type(L, index))); \
 	}
 
-/* Missing:
-	dwm-spawn
- */
-
 lua_State *globalL = NULL;
 ClrScheme *l_scheme = NULL;
 
@@ -37,17 +33,6 @@ static int l_u_drw_textw(lua_State*);
 static int l_u_keypress(lua_State*);
 static int l_u_status_text(lua_State*);
 static int l_u_systray_width(lua_State*);
-
-struct luaL_Reg libfuncs[] = {
-	{ "drw_textw", l_u_drw_textw },
-	{ "drw_text", l_u_drw_text },
-	{ "systray_width", l_u_systray_width },
-	{ "status_text", l_u_status_text },
-	{ "drawstatus", l_u_drawstatus },
-	{ "drw_setscheme", l_u_drw_setscheme },
-	{ "keypress", l_u_keypress },
-	{ NULL, NULL }
-};
 
 static int
 l_u_drw_setscheme(lua_State *L) {
@@ -207,20 +192,49 @@ l_u_systray_width(lua_State *L) {
 
 static int
 l_open_lib(lua_State *L) {
-	luaL_newlib(L, libfuncs);
+	struct luaL_Reg drwfuncs[] = {
+		{ "textw", l_u_drw_textw },
+		{ "text", l_u_drw_text },
+		{ "setscheme", l_u_drw_setscheme },
+		{ NULL, NULL },
+	};
 
-	/* TODO: put these into a 'mods' table */
-	lua_pushstring(L, "mod4");
+	struct luaL_Reg statusfuncs[] = {
+		{ "text", l_u_status_text },
+		{ "draw", l_u_drawstatus },
+		{ NULL, NULL },
+	};
+
+	luaL_newlib(L, ((struct luaL_Reg[]){{"systray_width", l_u_systray_width}, {NULL, NULL}}));
+
+	/* Status */
+	lua_pushliteral(L, "status");
+	luaL_newlib(L, statusfuncs);
+	lua_rawset(L, 2);
+
+	/* Drawing */
+	lua_pushliteral(L, "drw");
+	luaL_newlib(L, drwfuncs);
+	lua_rawset(L, 2);
+
+	/* Keys */
+	lua_pushliteral(L, "keys");
+	luaL_newlib(L, ((struct luaL_Reg[]){{"press", l_u_keypress}, {NULL, NULL}}));
+
+	lua_pushliteral(L, "mod4");
 	lua_pushinteger(L, Mod4Mask);
-	lua_settable(L, 2);
+	lua_rawset(L, -3);
 
-	lua_pushstring(L, "shift");
+	lua_pushliteral(L, "shift");
 	lua_pushinteger(L, ShiftMask);
-	lua_settable(L, 2);
+	lua_rawset(L, -3);
 
-	lua_pushstring(L, "control");
+	lua_pushliteral(L, "control");
 	lua_pushinteger(L, ControlMask);
-	lua_settable(L, 2);
+	lua_rawset(L, -3);
+
+	/* Assign 'keys' table to slot in 'dwm' module */
+	lua_rawset(L, 2);
 
 	return 1;
 }
