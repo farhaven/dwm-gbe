@@ -32,6 +32,7 @@ static int l_u_drw_textw(lua_State*);
 static int l_u_keypress(lua_State*);
 static int l_u_status_draw(lua_State*);
 static int l_u_status_text(lua_State*);
+static int l_u_status_click(lua_State*);
 static int l_u_systray_width(lua_State*);
 
 static int
@@ -158,6 +159,27 @@ l_u_drw_textw(lua_State *L) {
 }
 
 static int
+l_u_status_click(lua_State *L) {
+	if (lua_gettop(L) == 0) {
+		/* Return draw function, if any */
+		lua_pushliteral(L, "dwm-status-clickfn");
+		lua_rawget(L, LUA_REGISTRYINDEX);
+		return 1;
+	}
+
+	if (lua_gettop(L) != 1) {
+		return luaL_error(L, "Expected one argument, got %d", lua_gettop(L));
+	}
+	typeassert(L, -1, function);
+
+	lua_pushliteral(L, "dwm-status-clickfn");
+	lua_rotate(L, -2, 1);
+	lua_rawset(L, LUA_REGISTRYINDEX);
+
+	return 0;
+}
+
+static int
 l_u_status_draw(lua_State *L) {
 	if (lua_gettop(L) == 0) {
 		/* Return draw function, if any */
@@ -224,6 +246,29 @@ l_u_tag_click(lua_State *L) {
 }
 
 int
+l_call_status_click(int mods, int btn) {
+	if (!globalL) {
+		return 0;
+	}
+
+	lua_pushliteral(globalL, "dwm-status-clickfn");
+	if (lua_rawget(globalL, LUA_REGISTRYINDEX) != LUA_TFUNCTION) {
+		lua_pop(globalL, 1);
+		return 0;
+	}
+
+	lua_pushinteger(globalL, mods);
+	lua_pushinteger(globalL, btn);
+
+	if (lua_pcall(globalL, 2, 0, 0) != LUA_OK) {
+		fprintf(stderr, "%s\n", lua_tolstring(globalL, -1, NULL));
+		return 0;
+	}
+
+	return 1;
+}
+
+int
 l_call_tag_click(int mods, int btn, int tag) {
 	if (!globalL) {
 		return 0;
@@ -270,6 +315,7 @@ l_open_lib(lua_State *L) {
 	struct luaL_Reg statusfuncs[] = {
 		{ "text", l_u_status_text },
 		{ "draw", l_u_status_draw },
+		{ "click", l_u_status_click },
 		{ NULL, NULL },
 	};
 

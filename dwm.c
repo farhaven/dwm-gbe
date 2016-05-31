@@ -496,6 +496,10 @@ buttonpress(XEvent *e) {
 		return;
 	}
 
+	if ((click == ClkStatusText) && l_call_status_click(CLEANMASK(ev->state), ev->button)) {
+		return;
+	}
+
 	for(i = 0; i < LENGTH(buttons); i++)
 		if(click == buttons[i].click && buttons[i].func
 		   && buttons[i].button == ev->button
