@@ -190,8 +190,76 @@ l_u_systray_width(lua_State *L) {
 	return 1;
 }
 
+#define TAGFN(__name) \
+	static int \
+	l_u_tag_##__name(lua_State *L) { \
+		if (lua_gettop(L) != 1) { \
+			return luaL_error(L, "Expected one argument"); \
+		} \
+		typeassert(L, 1, integer); \
+		__name((unsigned int) lua_tonumber(L, 1)); \
+		return 0; \
+	}
+
+TAGFN(tag)
+TAGFN(toggletag)
+TAGFN(toggleview)
+TAGFN(view)
+#undef TAGFN
+
+static int
+l_u_tag_click(lua_State *L) {
+	if (lua_gettop(L) != 1) {
+		return luaL_error(L, "Expected one argument");
+	}
+	if (!lua_isfunction(L, 1) && !lua_isnil(L, 1)) {
+		return luaL_error(L, "Expected either a function or a nil, got a %s", lua_typename(L, lua_type(L, 1)));
+	}
+
+	lua_pushliteral(L, "dwm-tag-click");
+	lua_rotate(L, -2, 1);
+	lua_rawset(L, LUA_REGISTRYINDEX);
+
+	return 0;
+}
+
+int
+l_call_tag_click(int mods, int btn, int tag) {
+	if (!globalL) {
+		return 0;
+	}
+
+	lua_pushliteral(globalL, "dwm-tag-click");
+	if (lua_rawget(globalL, LUA_REGISTRYINDEX) != LUA_TFUNCTION) {
+		lua_pop(globalL, 1);
+		return 0;
+	}
+
+	lua_pushinteger(globalL, mods);
+	lua_pushinteger(globalL, btn);
+	lua_pushinteger(globalL, tag);
+
+	printf("Calling lua tag click handler\n");
+	if (lua_pcall(globalL, 3, 0, 0) != LUA_OK) {
+		fprintf(stderr, "%s\n", lua_tolstring(globalL, -1, NULL));
+		return 0;
+	}
+	printf("done, successful\n");
+
+	return 1;
+}
+
 static int
 l_open_lib(lua_State *L) {
+	struct luaL_Reg tagfuncs[] = {
+		{ "tag", l_u_tag_tag },
+		{ "toggletag", l_u_tag_toggletag },
+		{ "toggleview", l_u_tag_toggleview },
+		{ "view", l_u_tag_view },
+		{ "click", l_u_tag_click },
+		{ NULL, NULL },
+	};
+
 	struct luaL_Reg drwfuncs[] = {
 		{ "textw", l_u_drw_textw },
 		{ "text", l_u_drw_text },
@@ -207,6 +275,11 @@ l_open_lib(lua_State *L) {
 
 	luaL_newlib(L, ((struct luaL_Reg[]){{"systray_width", l_u_systray_width}, {NULL, NULL}}));
 
+	/* Tags */
+	lua_pushliteral(L, "tags");
+	luaL_newlib(L, tagfuncs);
+	lua_rawset(L, 2);
+
 	/* Status */
 	lua_pushliteral(L, "status");
 	luaL_newlib(L, statusfuncs);
@@ -220,6 +293,14 @@ l_open_lib(lua_State *L) {
 	/* Keys */
 	lua_pushliteral(L, "keys");
 	luaL_newlib(L, ((struct luaL_Reg[]){{"press", l_u_keypress}, {NULL, NULL}}));
+
+	lua_pushliteral(L, "mod1");
+	lua_pushinteger(L, Mod1Mask);
+	lua_rawset(L, -3);
+
+	lua_pushliteral(L, "mod3");
+	lua_pushinteger(L, Mod3Mask);
+	lua_rawset(L, -3);
 
 	lua_pushliteral(L, "mod4");
 	lua_pushinteger(L, Mod4Mask);

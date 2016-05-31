@@ -221,11 +221,11 @@ static void setmfact(const Arg *arg);
 static void setup(void);
 static void showhide(Client *c);
 static void sigchld(int unused);
-static void tag(const Arg *arg);
+void tag(unsigned int);
 static void tagmon(const Arg *arg);
 static void togglefloating(const Arg *arg);
-static void toggletag(const Arg *arg);
-static void toggleview(const Arg *arg);
+void toggletag(unsigned int);
+void toggleview(unsigned int);
 static void unfocus(Client *c, Bool setfocus);
 static void unmanage(Client *c, Bool destroyed);
 static void unmapnotify(XEvent *e);
@@ -242,7 +242,7 @@ static void updatesystrayiconstate(Client *i, XPropertyEvent *ev);
 static void updatewindowtype(Client *c);
 static void updatetitle(Client *c);
 static void updatewmhints(Client *c);
-static void view(const Arg *arg);
+void view(unsigned int);
 static Client *wintoclient(Window w);
 static Monitor *wintomon(Window w);
 static Client *wintosystrayicon(Window w);
@@ -492,6 +492,10 @@ buttonpress(XEvent *e) {
 		click = ClkClientWin;
 	}
 
+	if ((click == ClkTagBar) && l_call_tag_click(CLEANMASK(ev->state), ev->button, i)) {
+		return;
+	}
+
 	for(i = 0; i < LENGTH(buttons); i++)
 		if(click == buttons[i].click && buttons[i].func
 		   && buttons[i].button == ev->button
@@ -512,10 +516,9 @@ checkotherwm(void) {
 
 void
 cleanup(void) {
-	Arg a = {.ui = ~0};
 	Monitor *m;
 
-	view(&a);
+	view((unsigned int)~0);
 	for(m = mons; m; m = m->next) {
 		while(m->stack)
 			unmanage(m->stack, False);
@@ -1850,11 +1853,11 @@ spawn(const Arg *arg) {
 }
 
 void
-tag(const Arg *arg) {
-	if (!selmon->sel || !(arg->ui & TAGMASK))
+tag(unsigned int t) {
+	if (!selmon->sel || !(t & TAGMASK))
 		return;
 
-	selmon->sel->tags = arg->ui & TAGMASK;
+	selmon->sel->tags = t & TAGMASK;
 	focus(NULL);
 	arrange(selmon);
 }
@@ -1880,20 +1883,20 @@ togglefloating(const Arg *arg) {
 }
 
 void
-toggletag(const Arg *arg) {
+toggletag(unsigned int t) {
 	unsigned int newtags;
 
 	if(!selmon->sel)
 		return;
-	newtags = selmon->sel->tags ^ (arg->ui & TAGMASK);
+	newtags = selmon->sel->tags ^ (t & TAGMASK);
 	selmon->sel->tags = newtags;
 	focus(NULL);
 	arrange(selmon);
 }
 
 void
-toggleview(const Arg *arg) {
-	unsigned int newtagset = selmon->tagset[selmon->seltags] ^ (arg->ui & TAGMASK);
+toggleview(unsigned int t) {
+	unsigned int newtagset = selmon->tagset[selmon->seltags] ^ (t & TAGMASK);
 
 	selmon->tagset[selmon->seltags] = newtagset;
 	focus(NULL);
@@ -2294,10 +2297,10 @@ updatewmhints(Client *c) {
 }
 
 void
-view(const Arg *arg) {
+view(unsigned int t) {
 	selmon->seltags ^= 1; /* toggle sel tagset */
-	if(arg->ui & TAGMASK)
-		selmon->tagset[selmon->seltags] = arg->ui & TAGMASK;
+	if(t & TAGMASK)
+		selmon->tagset[selmon->seltags] = t & TAGMASK;
 	focus(NULL);
 	arrange(selmon);
 }
