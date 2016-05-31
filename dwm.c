@@ -1161,8 +1161,8 @@ keypress(XEvent *e) {
 	ev = &e->xkey;
 	keysym = XKeycodeToKeysym(dpy, (KeyCode)ev->keycode, 0);
 
-	printf("Keypress with mod 0x%04x\n", CLEANMASK(ev->state));
-	l_call_keypress(CLEANMASK(ev->state), keysym);
+	if (l_call_keypress(CLEANMASK(ev->state), keysym))
+		return;
 
 	for(i = 0; i < LENGTH(keys); i++) {
 		if(keysym == keys[i].keysym
