@@ -75,26 +75,9 @@ static const Bool resizehints = False;
 
 /* key definitions */
 #define MODKEY Mod4Mask
-#define TAGKEYS(KEY,TAG) \
-	{ MODKEY,                       KEY,      toggleview, {.ui = TAG} }, \
-	{ MODKEY|ControlMask,           KEY,      view,       {.ui = TAG} }, \
-	{ MODKEY|ShiftMask,             KEY,      tag,        {.ui = TAG} }, \
-	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,  {.ui = TAG} }
-
-/* commands */
-static const char *termcmd[] = { "fdb", NULL };
-static const char *lockcmd[] = { "xscreensaver-command", "-lock", NULL};
-
-#define MPD_CMD(___c) { \
-	.v = (char *[]) { \
-		"mpc", ___c, NULL \
-	} \
-}
 
 static Key keys[] = {
 	/* modifier           key             function    argument */
-	{ MODKEY,             XK_Return,      spawn,      {.v = termcmd } },
-	{ MODKEY,             XK_l,           spawn,      {.v = lockcmd } },
 	{ MODKEY | ShiftMask, XK_l,           l_loadconfig, {0} },
 	{ MODKEY,             XK_Down,        focusstack, {.i = +1 } },
 	{ MODKEY,             XK_Up,          focusstack, {.i = -1 } },
@@ -102,28 +85,11 @@ static Key keys[] = {
 	{ MODKEY | Mod1Mask,  XK_Left,        setmfact,   {.f = -0.01} },
 	{ MODKEY,             XK_Left,        zoom,       {0} },
 	{ MODKEY,             XK_Right,       pushdown,   {0} },
-	{ MODKEY,             XK_r,           view,       {0} },
 	{ MODKEY | ShiftMask, XK_c,           killclient, {0} },
-	{ MODKEY,             XK_0,           toggleview, {.ui = ~0 } },
-	{ MODKEY | ShiftMask, XK_0,           toggletag,  {.ui = ~0 } },
 	{ MODKEY,             XK_space,       focusmon,   {.i = -1 } },
 	{ MODKEY | ShiftMask, XK_space,       tagmon,     {.i = -1 } },
 	{ 0,                  XF86XK_Back,    focusmon,   {.i = -1 } },
 	{ MODKEY,             XF86XK_Back,    tagmon,     {.i = -1 } },
-	{ 0,                  XF86XK_AudioStop, spawn,    MPD_CMD("stop") },
-	{ 0,                  XF86XK_AudioPlay, spawn,    MPD_CMD("toggle") },
-	{ 0,                  XF86XK_AudioPrev, spawn,    MPD_CMD("prev") },
-	{ 0,                  XF86XK_AudioNext, spawn,    MPD_CMD("next") },
-	{ MODKEY,             XK_u,           spawn,      {.v = (char *[]){"clipstuff", "unicode", NULL}}},
-	TAGKEYS(XK_2, T_MAIL),
-	TAGKEYS(XK_3, T_WWW),
-	TAGKEYS(XK_4, T_TERM),
-	TAGKEYS(XK_q, T_COMM),
-	TAGKEYS(XK_w, T_DOC),
-	TAGKEYS(XK_d, T_MISC1),
-	TAGKEYS(XK_e, T_MISC2),
-	TAGKEYS(XK_f, T_CAL),
-	TAGKEYS(XK_j, T_JUNK),
 };
 
 /* button definitions */
@@ -133,14 +99,8 @@ static Button buttons[] = {
 	{ ClkWinTitle,   0,         Button1, focusstack,     {.i = -1} },
 	{ ClkWinTitle,   0,         Button2, zoom,           {0} },
 	{ ClkWinTitle,   0,         Button3, focusstack,     {.i = 1 } },
-	{ ClkStatusText, 0,         Button1, spawn,          {.v = termcmd } },
 
 	{ ClkClientWin,  MODKEY,    Button1, movemouse,      {0} },
 	{ ClkClientWin,  MODKEY,    Button2, togglefloating, {0} },
 	{ ClkClientWin,  MODKEY,    Button3, resizemouse,    {0} },
-
-	{ ClkTagBar,     0,         Button1, toggleview,     {0} },
-	{ ClkTagBar,     0,         Button3, view,           {0} },
-	{ ClkTagBar,     MODKEY,    Button1, toggletag,      {0} },
-	{ ClkTagBar,     MODKEY,    Button3, tag,            {0} },
 };
