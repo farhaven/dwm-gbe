@@ -223,7 +223,6 @@ static void showhide(Client *c);
 static void sigchld(int unused);
 static void tag(const Arg *arg);
 static void tagmon(const Arg *arg);
-static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
 static void toggletag(const Arg *arg);
 static void toggleview(const Arg *arg);
@@ -1867,25 +1866,6 @@ tagmon(const Arg *arg) {
 	if(!selmon->sel || !mons->next)
 		return;
 	sendmon(selmon->sel, dirtomon(arg->i));
-}
-
-void
-togglebar(const Arg *arg) {
-	selmon->showbar = !selmon->showbar;
-	updatebarpos(selmon);
-	resizebarwin(selmon);
-	if(showsystray) {
-		XWindowChanges wc;
-		if(!selmon->showbar)
-			wc.y = -bh;
-		else {
-			wc.y = 0;
-			if(!selmon->topbar)
-				wc.y = selmon->mh - bh;
-		}
-		XConfigureWindow(dpy, systray->win, CWY, &wc);
-	}
-	arrange(selmon);
 }
 
 void
