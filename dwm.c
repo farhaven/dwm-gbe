@@ -736,7 +736,6 @@ createmon(void) {
 	m->tagset[0] = m->tagset[1] = 0;
 	m->mfact = mfact;
 	m->nmaster = nmaster;
-	m->showbar = showbar;
 	m->topbar = topbar;
 	return m;
 }
@@ -1974,12 +1973,9 @@ void
 updatebarpos(Monitor *m) {
 	m->wy = m->my;
 	m->wh = m->mh;
-	if(m->showbar) {
-		m->wh -= bh;
-		m->by = m->topbar ? m->wy : m->wy + m->wh;
-		m->wy = m->topbar ? m->wy + bh : m->wy;
-	} else
-		m->by = -bh;
+	m->wh -= bh;
+	m->by = m->topbar ? m->wy : m->wy + m->wh;
+	m->wy = m->topbar ? m->wy + bh : m->wy;
 }
 
 void

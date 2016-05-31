@@ -16,7 +16,6 @@ struct Monitor {
 	unsigned int seltags;
 	unsigned int sellt;
 	unsigned int tagset[2];
-	Bool showbar;
 	Bool topbar;
 	Client *clients;
 	Client *sel;
