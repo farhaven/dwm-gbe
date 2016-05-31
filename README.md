@@ -70,6 +70,9 @@ following functions are available to Lua:
 * `dwm.drw_setscheme {["bg"]=bg, ["fg"]=fg, ["border"]=border}` sets the
   current color scheme to the specified colors. If `border` is omitted, "#000"
   is assumed. Colors are hex-strings.
+* `dwm.keypress mods key fn` registers `fn` with signature `(mods key)` as a key
+  handler for `key` if `mods` are pressed. Passing `nil` instead of a function unregisters
+  the key press handler.
 * `dwm.drawstatus fn` registers `fn` with signature `(x w s) -> x` as a function
   that draws the status area. The parameter `x` is the right most part of the
   layout icon, the parameter `w` is the maximum available horizontal space
