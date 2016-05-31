@@ -97,33 +97,6 @@ l_u_drw_setscheme(lua_State *L) {
 }
 
 static int
-l_u_status_draw(lua_State *L) {
-	if (lua_gettop(L) == 0) {
-		/* Return draw function, if any */
-		lua_pushliteral(L, "dwm-status-drawfn");
-		lua_rawget(L, LUA_REGISTRYINDEX);
-		return 1;
-	}
-
-	if (lua_gettop(L) != 1) {
-		return luaL_error(L, "Expected one argument, got %d", lua_gettop(L));
-	}
-	typeassert(L, -1, function);
-
-	lua_pushliteral(L, "dwm-status-drawfn");
-	lua_rotate(L, -2, 1);
-	lua_rawset(L, LUA_REGISTRYINDEX);
-
-	return 0;
-}
-
-static int
-l_u_status_text(lua_State *L) {
-	lua_pushstring(L, stext);
-	return 1;
-}
-
-static int
 l_u_drw_text(lua_State *L) {
 	int x, w, invert = 0, simple = 0;
 	const char *txt;
@@ -181,6 +154,33 @@ l_u_drw_textw(lua_State *L) {
 	} else {
 		lua_pushnumber(L, TEXTW(txt));
 	}
+	return 1;
+}
+
+static int
+l_u_status_draw(lua_State *L) {
+	if (lua_gettop(L) == 0) {
+		/* Return draw function, if any */
+		lua_pushliteral(L, "dwm-status-drawfn");
+		lua_rawget(L, LUA_REGISTRYINDEX);
+		return 1;
+	}
+
+	if (lua_gettop(L) != 1) {
+		return luaL_error(L, "Expected one argument, got %d", lua_gettop(L));
+	}
+	typeassert(L, -1, function);
+
+	lua_pushliteral(L, "dwm-status-drawfn");
+	lua_rotate(L, -2, 1);
+	lua_rawset(L, LUA_REGISTRYINDEX);
+
+	return 0;
+}
+
+static int
+l_u_status_text(lua_State *L) {
+	lua_pushstring(L, stext);
 	return 1;
 }
 
