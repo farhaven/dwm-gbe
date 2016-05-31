@@ -43,6 +43,7 @@
 #include <X11/extensions/Xinerama.h>
 #endif /* XINERAMA */
 
+#include "dwm.h"
 #include "drw.h"
 #include "util.h"
 #include "l.h"
@@ -1101,6 +1102,25 @@ grabbuttons(Client *c, Bool focused) {
 }
 
 void
+grabkey(int modifiers, KeySym ksym, int ungrab) {
+	int i;
+	unsigned int mods[] = { 0, LockMask, numlockmask, numlockmask|LockMask };
+	KeyCode code;
+
+	if((code = XKeysymToKeycode(dpy, ksym))) {
+		fprintf(stderr, "Grabkeys: mod=%d code=%d\n", modifiers, code);
+		for(i = 0; i < LENGTH(mods); i++) {
+			if (ungrab) {
+				XUngrabKey(dpy, code, modifiers | mods[i], root);
+			} else {
+				XGrabKey(dpy, code, modifiers | mods[i], root,
+				         True, GrabModeAsync, GrabModeAsync);
+			}
+		}
+	}
+}
+
+void
 grabkeys(void) {
 	unsigned int i, j;
 	unsigned int modifiers[] = { 0, LockMask, numlockmask, numlockmask|LockMask };
@@ -1138,6 +1158,10 @@ keypress(XEvent *e) {
 
 	ev = &e->xkey;
 	keysym = XKeycodeToKeysym(dpy, (KeyCode)ev->keycode, 0);
+
+	printf("Keypress with mod 0x%04x\n", CLEANMASK(ev->state));
+	l_call_keypress(CLEANMASK(ev->state), keysym);
+
 	for(i = 0; i < LENGTH(keys); i++) {
 		if(keysym == keys[i].keysym
 		   && CLEANMASK(keys[i].mod) == CLEANMASK(ev->state)

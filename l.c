@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <err.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -6,8 +7,11 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
+#include <X11/keysym.h>
+
 #include "drw.h"
 #include "l.h"
+#include "dwm.h"
 
 #define typeassert(L, index, type) \
 	if (!lua_is##type(L, index)) { \
@@ -26,12 +30,13 @@ extern char stext[256];
 extern int bh;
 extern Drw *drw;
 
-static int l_u_drw_textw(lua_State*);
-static int l_u_systray_width(lua_State*);
-static int l_u_status_text(lua_State*);
 static int l_u_drawstatus(lua_State*);
-static int l_u_drw_text(lua_State*);
 static int l_u_drw_setscheme(lua_State*);
+static int l_u_drw_text(lua_State*);
+static int l_u_drw_textw(lua_State*);
+static int l_u_keypress(lua_State*);
+static int l_u_status_text(lua_State*);
+static int l_u_systray_width(lua_State*);
 
 struct luaL_Reg libfuncs[] = {
 	{ "drw_textw", l_u_drw_textw },
@@ -40,6 +45,7 @@ struct luaL_Reg libfuncs[] = {
 	{ "status_text", l_u_status_text },
 	{ "drawstatus", l_u_drawstatus },
 	{ "drw_setscheme", l_u_drw_setscheme },
+	{ "keypress", l_u_keypress },
 	{ NULL, NULL }
 };
 
@@ -202,6 +208,20 @@ l_u_systray_width(lua_State *L) {
 static int
 l_open_lib(lua_State *L) {
 	luaL_newlib(L, libfuncs);
+
+	/* TODO: put these into a 'mods' table */
+	lua_pushstring(L, "mod4");
+	lua_pushinteger(L, Mod4Mask);
+	lua_settable(L, 2);
+
+	lua_pushstring(L, "shift");
+	lua_pushinteger(L, ShiftMask);
+	lua_settable(L, 2);
+
+	lua_pushstring(L, "control");
+	lua_pushinteger(L, ControlMask);
+	lua_settable(L, 2);
+
 	return 1;
 }
 
@@ -240,34 +260,26 @@ l_init() {
 	luaL_openlibs(L);
 	luaL_requiref(L, "dwm", l_open_lib, 1);
 
+	lua_pushliteral(L, "dwm-keypress");
+	lua_newtable(L);
+	lua_rawset(L, LUA_REGISTRYINDEX);
+
 	l_loadconfig();
 }
 
 int
-l_have_status_drawfn() {
-	int type;
+l_call_status_drawfn(int x, int mw, int sel) {
+	int res, isnumber;
 
 	if (!globalL) {
-		return 0;
+		return -1;
 	}
 
 	lua_pushliteral(globalL, "dwm-status-drawfn");
-	type = lua_rawget(globalL, LUA_REGISTRYINDEX);
-	lua_pop(globalL, 1);
-
-	if (type != LUA_TFUNCTION) {
-		return 0;
+	if (lua_rawget(globalL, LUA_REGISTRYINDEX) != LUA_TFUNCTION) {
+		lua_pop(globalL, 1);
+		return -1;
 	}
-
-	return 1;
-}
-
-int
-l_call_status_drawfn(int x, int mw, int sel) {
-	int res;
-
-	lua_pushliteral(globalL, "dwm-status-drawfn");
-	lua_rawget(globalL, LUA_REGISTRYINDEX);
 
 	lua_pushinteger(globalL, x);
 	lua_pushinteger(globalL, mw);
@@ -285,9 +297,103 @@ l_call_status_drawfn(int x, int mw, int sel) {
 		return -1;
 	}
 
-	res = (int) lua_tonumber(globalL, -1);
+	res = (int) lua_tonumberx(globalL, -1, &isnumber);
 
 	lua_pop(globalL, 1);
 
+	if (!isnumber)
+		return -1;
 	return res;
+}
+
+static int
+l_u_keypress(lua_State *L) {
+	int modifiers, type, ungrab;
+	const char *symname;
+	char *key;
+	KeySym ksym;
+
+	if (lua_gettop(L) != 3) {
+		return luaL_error(L, "Expected 3 arguments, got %d", lua_gettop(L));
+	}
+	typeassert(L, 1, integer);
+	typeassert(L, 2, string);
+	if (!lua_isfunction(L, 3) && !lua_isnil(L, 3)) {
+		return luaL_error(L, "Expected either a function or nil as last argument, got a %s!",
+		                  lua_typename(L, lua_type(L, 3)));
+	}
+	ungrab = lua_isnil(L, 3);
+
+	modifiers = (int) lua_tonumber(L, 1);
+	symname = lua_tolstring(L, 2, NULL);
+	if (!symname) {
+		return luaL_error(L, "Can't convert argument 2 to string!");
+	}
+	ksym = XStringToKeysym(symname);
+	if (ksym == NoSymbol) {
+		return luaL_error(L, "Key sym \"%s\" is unknown", symname);
+	}
+
+	lua_pushliteral(L, "dwm-keypress");
+	type = lua_rawget(L, LUA_REGISTRYINDEX);
+	assert(type == LUA_TTABLE);
+
+	asprintf(&key, "%x-%s", modifiers, symname);
+	if (key == NULL) {
+		return luaL_error(L, "Can't allocate space for table key!");
+	}
+
+	fprintf(stderr, "Keypress register called, mod=0x%04x, sym=\"%s\", key=\"%s\"\n", modifiers, symname, key);
+
+	lua_pushstring(L, key);
+	lua_rotate(L, -3, -1); /* If ungrab is true, we've already got a nil on the stack */
+	lua_rawset(L, -3);
+
+	free(key);
+
+	fprintf(stderr, "top=%d\n", lua_gettop(L));
+
+	grabkey(modifiers, ksym, ungrab);
+
+	return 0;
+}
+
+int
+l_call_keypress(unsigned int mod, KeySym keysym) {
+	int type;
+	char *symname, *key;
+
+	if (!globalL) {
+		return 0;
+	}
+
+	lua_pushliteral(globalL, "dwm-keypress");
+	type = lua_rawget(globalL, LUA_REGISTRYINDEX);
+	assert(type == LUA_TTABLE);
+
+	symname = XKeysymToString(keysym);
+	asprintf(&key, "%x-%s", mod, symname);
+	if (!key) {
+		fprintf(stderr, "Malloc failure!\n");
+		return 0;
+	}
+
+	lua_pushstring(globalL, key);
+	type = lua_rawget(globalL, -2);
+	free(key);
+
+	if (type != LUA_TFUNCTION) {
+		fprintf(stderr, "Got something that's a %s, expected a function!\n", lua_typename(globalL, type));
+		return 0;
+	}
+
+	lua_pushinteger(globalL, mod);
+	lua_pushstring(globalL, symname);
+
+	if (lua_pcall(globalL, 2, 0, 0) != LUA_OK) {
+		fprintf(stderr, "%s\n", lua_tolstring(globalL, -1, NULL));
+		return 0;
+	}
+
+	return 1;
 }
