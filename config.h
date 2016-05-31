@@ -37,6 +37,7 @@ enum {
 };
 static const Rule rules[] = {
 	/* class      instance       title    tags mask isfloating monitor */
+	{ NULL,       NULL,          "Yadex", T_NONE,   True,      -1 },
 	{ "Gimp",     NULL,          NULL,    T_MISC1,  False,     -1 },
 	{ "Xmessage", NULL,          NULL,    T_NONE,   True,      -1 },
 	{ NULL,       NULL,          "mutt",  T_MAIL,   False,     -1 },
