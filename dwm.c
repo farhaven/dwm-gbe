@@ -1108,6 +1108,8 @@ grabkey(int modifiers, KeySym ksym, int ungrab) {
 	unsigned int mods[] = { 0, LockMask, numlockmask, numlockmask|LockMask };
 	KeyCode code;
 
+	updatenumlockmask();
+
 	if((code = XKeysymToKeycode(dpy, ksym))) {
 		for(i = 0; i < LENGTH(mods); i++) {
 			if (ungrab) {
