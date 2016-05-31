@@ -103,15 +103,6 @@ typedef struct {
 	const Arg arg;
 } Key;
 
-typedef struct {
-	const char *class;
-	const char *instance;
-	const char *title;
-	unsigned int tags;
-	Bool isfloating;
-	int monitor;
-} Rule;
-
 typedef struct Systray   Systray;
 struct Systray {
 	Window win;
@@ -262,9 +253,6 @@ struct NumTags { char limitexceeded[LENGTH(tags) > 31 ? -1 : 1]; };
 void
 applyrules(Client *c) {
 	const char *class, *instance;
-	unsigned int i;
-	const Rule *r;
-	Monitor *m;
 	XClassHint ch = { NULL, NULL };
 
 	/* rule matching */
@@ -282,24 +270,11 @@ applyrules(Client *c) {
 
 	l_call_newclient(c);
 
-	for(i = 0; i < LENGTH(rules); i++) {
-		r = &rules[i];
-		if((!r->title || strstr(c->name, r->title))
-		   && (!r->class || strstr(c->class, r->class))
-		   && (!r->instance || strstr(c->instance, r->instance))) {
-			c->isfloating = r->isfloating;
-			c->tags |= r->tags;
-			for(m = mons; m && m->num != r->monitor; m = m->next);
-			if(m)
-				c->mon = m;
-		}
-	}
-
 	if(ch.res_class)
 		XFree(ch.res_class);
 	if(ch.res_name)
 		XFree(ch.res_name);
-	if (c->tags != 0) /* Tags already applied by rules */
+	if (c->tags != 0) /* Tags already applied by hook */
 		return;
 	if (c->mon->tagset[c->mon->seltags] == 0)
 		c->tags = ~0;
