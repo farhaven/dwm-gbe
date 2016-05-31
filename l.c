@@ -25,15 +25,56 @@ ClrScheme *l_scheme = NULL;
 extern char stext[256];
 extern int bh;
 extern Drw *drw;
+extern Monitor *selmon;
 
 static int l_u_drw_setscheme(lua_State*);
 static int l_u_drw_text(lua_State*);
 static int l_u_drw_textw(lua_State*);
 static int l_u_keypress(lua_State*);
+static int l_u_newclient(lua_State*);
+static int l_u_status_click(lua_State*);
 static int l_u_status_draw(lua_State*);
 static int l_u_status_text(lua_State*);
-static int l_u_status_click(lua_State*);
 static int l_u_systray_width(lua_State*);
+static int l_u_client_current(lua_State*);
+static int l_u_client_index(lua_State*);
+
+struct l_Client {
+	Client *c;
+};
+
+static int
+l_u_client_tag(lua_State *L) {
+	struct l_Client *w = luaL_checkudata(L, 1, "dwm-client");
+	tag(w->c, (unsigned int) luaL_checkinteger(L, 2));
+	return 0;
+}
+
+static int
+l_u_client_toggletag(lua_State *L) {
+	struct l_Client *w = luaL_checkudata(L, 1, "dwm-client");
+	toggletag(w->c, (unsigned int) luaL_checkinteger(L, 2));
+	return 0;
+}
+
+static int
+l_u_client_togglefloating(lua_State *L) {
+	struct l_Client *w = luaL_checkudata(L, 1, "dwm-client");
+	togglefloating(w->c);
+	return 0;
+}
+
+static int
+l_u_tag_toggleview(lua_State *L) {
+	toggleview((unsigned int) luaL_checkinteger(L, 1));
+	return 0;
+}
+
+static int
+l_u_tag_view(lua_State *L) {
+	view((unsigned int) luaL_checkinteger(L, 1));
+	return 0;
+}
 
 static int
 l_u_drw_setscheme(lua_State *L) {
@@ -212,23 +253,6 @@ l_u_systray_width(lua_State *L) {
 	return 1;
 }
 
-#define TAGFN(__name) \
-	static int \
-	l_u_tag_##__name(lua_State *L) { \
-		if (lua_gettop(L) != 1) { \
-			return luaL_error(L, "Expected one argument"); \
-		} \
-		typeassert(L, 1, integer); \
-		__name((unsigned int) lua_tonumber(L, 1)); \
-		return 0; \
-	}
-
-TAGFN(tag)
-TAGFN(toggletag)
-TAGFN(toggleview)
-TAGFN(view)
-#undef TAGFN
-
 static int
 l_u_tag_click(lua_State *L) {
 	if (lua_gettop(L) != 1) {
@@ -284,12 +308,10 @@ l_call_tag_click(int mods, int btn, int tag) {
 	lua_pushinteger(globalL, btn);
 	lua_pushinteger(globalL, tag);
 
-	printf("Calling lua tag click handler\n");
 	if (lua_pcall(globalL, 3, 0, 0) != LUA_OK) {
 		fprintf(stderr, "%s\n", lua_tolstring(globalL, -1, NULL));
 		return 0;
 	}
-	printf("done, successful\n");
 
 	return 1;
 }
@@ -297,11 +319,9 @@ l_call_tag_click(int mods, int btn, int tag) {
 static int
 l_open_lib(lua_State *L) {
 	struct luaL_Reg tagfuncs[] = {
-		{ "tag", l_u_tag_tag },
-		{ "toggletag", l_u_tag_toggletag },
+		{ "click", l_u_tag_click },
 		{ "toggleview", l_u_tag_toggleview },
 		{ "view", l_u_tag_view },
-		{ "click", l_u_tag_click },
 		{ NULL, NULL },
 	};
 
@@ -319,7 +339,32 @@ l_open_lib(lua_State *L) {
 		{ NULL, NULL },
 	};
 
-	luaL_newlib(L, ((struct luaL_Reg[]){{"systray_width", l_u_systray_width}, {NULL, NULL}}));
+	struct luaL_Reg modfuncs[] = {
+		{ "systray_width", l_u_systray_width },
+		{ "newclient", l_u_newclient },
+		{ NULL, NULL },
+	};
+
+	struct luaL_Reg clientfuncs_m[] = {
+		{ "__index", l_u_client_index },
+		{ NULL, NULL },
+	};
+
+	struct luaL_Reg clientfuncs_f[] = {
+		{ "current", l_u_client_current },
+		{ NULL, NULL },
+	};
+
+	luaL_newmetatable(L, "dwm-client");
+	luaL_setfuncs(L, clientfuncs_m, 0);
+	lua_pop(L, 1);
+
+	luaL_newlib(L, modfuncs);
+
+	/* Clients */
+	lua_pushliteral(L, "client");
+	luaL_newlib(L, clientfuncs_f);
+	lua_rawset(L, 2);
 
 	/* Tags */
 	lua_pushliteral(L, "tags");
@@ -520,7 +565,8 @@ l_call_keypress(unsigned int mod, KeySym keysym) {
 	free(key);
 
 	if (type != LUA_TFUNCTION) {
-		fprintf(stderr, "Got something that's a %s, expected a function!\n", lua_typename(globalL, type));
+		fprintf(stderr, "Got something that's a %s, expected a function! (sym='%s')\n",
+		        lua_typename(globalL, type), symname);
 		return 0;
 	}
 
@@ -528,6 +574,99 @@ l_call_keypress(unsigned int mod, KeySym keysym) {
 	lua_pushstring(globalL, symname);
 
 	if (lua_pcall(globalL, 2, 0, 0) != LUA_OK) {
+		fprintf(stderr, "%s\n", lua_tolstring(globalL, -1, NULL));
+		return 0;
+	}
+
+	return 1;
+}
+
+int
+l_u_newclient(lua_State *L) {
+	if (lua_gettop(L) != 1) {
+		return luaL_error(L, "Expected one argument, got %d", lua_gettop(L));
+	}
+	typeassert(L, -1, function);
+
+	lua_pushliteral(L, "dwm-newclient");
+	lua_rotate(L, -2, 1);
+	lua_rawset(L, LUA_REGISTRYINDEX);
+
+	return 0;
+}
+
+static int
+l_u_client_index(lua_State *L) {
+	struct l_Client *w;
+	int prop;
+	const char *propnames[] = { "name", "class", "instance", "tag", "toggletag", "togglefloating", NULL };
+
+	w = luaL_checkudata(L, 1, "dwm-client");
+
+	prop = luaL_checkoption(L, 2, NULL, propnames);
+	switch (prop) {
+		case 0:
+			lua_pushstring(L, w->c->name);
+			break;
+		case 1:
+			lua_pushstring(L, w->c->class);
+			break;
+		case 2:
+			lua_pushstring(L, w->c->instance);
+			break;
+		case 3:
+			lua_pushcfunction(L, l_u_client_tag);
+			break;
+		case 4:
+			lua_pushcfunction(L, l_u_client_toggletag);
+			break;
+		case 5:
+			lua_pushcfunction(L, l_u_client_togglefloating);
+			break;
+		default:
+			return luaL_error(L, "Unknown property requested!");
+	}
+
+	return 1;
+}
+
+static int
+l_u_client_current(lua_State *L) {
+	struct l_Client *wrapper;
+
+	if (!selmon || !selmon->sel) {
+		lua_pushnil(L);
+	} else {
+		wrapper = lua_newuserdata(globalL, sizeof(*wrapper));
+		wrapper->c = selmon->sel;
+		luaL_getmetatable(L, "dwm-client");
+		lua_setmetatable(L, -2);
+	}
+
+	return 1;
+}
+
+int
+l_call_newclient(Client *client) {
+	struct l_Client *wrapper;
+
+	if (!globalL) {
+		return 0;
+	}
+
+	lua_pushliteral(globalL, "dwm-newclient");
+	if (lua_rawget(globalL, LUA_REGISTRYINDEX) != LUA_TFUNCTION) {
+		lua_pop(globalL, 1);
+		return 0;
+	}
+
+	wrapper = lua_newuserdata(globalL, sizeof(*wrapper));
+	wrapper->c = client;
+
+	luaL_getmetatable(globalL, "dwm-client");
+	lua_setmetatable(globalL, -2);
+
+	if (lua_pcall(globalL, 1, 0, 0) != LUA_OK) {
 		fprintf(stderr, "%s\n", lua_tolstring(globalL, -1, NULL));
 		return 0;
 	}

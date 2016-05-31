@@ -96,49 +96,12 @@ typedef struct {
 	const Arg arg;
 } Button;
 
-typedef struct Monitor Monitor;
-typedef struct Client Client;
-struct Client {
-	char name[256];
-	float mina, maxa;
-	int x, y, w, h;
-	int oldx, oldy, oldw, oldh;
-	int basew, baseh, incw, inch, maxw, maxh, minw, minh;
-	int bw, oldbw;
-	unsigned int tags;
-	Bool isfixed, isfloating, isurgent, neverfocus, oldstate, isfullscreen;
-	Client *next;
-	Client *snext;
-	Monitor *mon;
-	Window win;
-};
-
 typedef struct {
 	unsigned int mod;
 	KeySym keysym;
 	void (*func)(const Arg *);
 	const Arg arg;
 } Key;
-
-struct Monitor {
-	char ltsymbol[16];
-	float mfact;
-	int nmaster;
-	int num;
-	int by;               /* bar geometry */
-	int mx, my, mw, mh;   /* screen size */
-	int wx, wy, ww, wh;   /* window area  */
-	unsigned int seltags;
-	unsigned int sellt;
-	unsigned int tagset[2];
-	Bool showbar;
-	Bool topbar;
-	Client *clients;
-	Client *sel;
-	Client *stack;
-	Monitor *next;
-	Window barwin;
-};
 
 typedef struct {
 	const char *class;
@@ -221,10 +184,10 @@ static void setmfact(const Arg *arg);
 static void setup(void);
 static void showhide(Client *c);
 static void sigchld(int unused);
-void tag(unsigned int);
+void tag(Client *, unsigned int);
 static void tagmon(const Arg *arg);
-static void togglefloating(const Arg *arg);
-void toggletag(unsigned int);
+void togglefloating(Client *);
+void toggletag(Client *, unsigned int);
 void toggleview(unsigned int);
 static void unfocus(Client *c, Bool setfocus);
 static void unmanage(Client *c, Bool destroyed);
@@ -285,7 +248,8 @@ ClrScheme scheme[SchemeLast];
 static Display *dpy;
 Drw *drw;
 static Fnt *fnt;
-static Monitor *mons, *selmon;
+static Monitor *mons;
+Monitor *selmon;
 static Window root;
 
 /* configuration, allows nested code to access above variables */
@@ -309,11 +273,20 @@ applyrules(Client *c) {
 	class    = ch.res_class ? ch.res_class : broken;
 	instance = ch.res_name  ? ch.res_name  : broken;
 
+	if (c->class)
+		free(c->class);
+	if (c->instance)
+		free(c->instance);
+	c->class = strdup(class);
+	c->instance = strdup(instance);
+
+	l_call_newclient(c);
+
 	for(i = 0; i < LENGTH(rules); i++) {
 		r = &rules[i];
 		if((!r->title || strstr(c->name, r->title))
-		   && (!r->class || strstr(class, r->class))
-		   && (!r->instance || strstr(instance, r->instance))) {
+		   && (!r->class || strstr(c->class, r->class))
+		   && (!r->instance || strstr(c->instance, r->instance))) {
 			c->isfloating = r->isfloating;
 			c->tags |= r->tags;
 			for(m = mons; m && m->num != r->monitor; m = m->next);
@@ -1866,11 +1839,11 @@ spawn(const Arg *arg) {
 }
 
 void
-tag(unsigned int t) {
-	if (!selmon->sel || !(t & TAGMASK))
+tag(Client *c, unsigned int t) {
+	if (!c || !(t & TAGMASK))
 		return;
 
-	selmon->sel->tags = t & TAGMASK;
+	c->tags = t & TAGMASK;
 	focus(NULL);
 	arrange(selmon);
 }
@@ -1883,26 +1856,26 @@ tagmon(const Arg *arg) {
 }
 
 void
-togglefloating(const Arg *arg) {
-	if(!selmon->sel)
+togglefloating(Client *c) {
+	if(!c)
 		return;
-	if(selmon->sel->isfullscreen) /* no support for fullscreen windows */
+	if(c->isfullscreen) /* no support for fullscreen windows */
 		return;
-	selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed;
-	if(selmon->sel->isfloating)
-		resize(selmon->sel, selmon->sel->x, selmon->sel->y,
-		       selmon->sel->w, selmon->sel->h, False);
-	arrange(selmon);
+	c->isfloating = !c->isfloating || c->isfixed;
+	if(c->isfloating)
+		resize(c, c->x, c->y,
+		       c->w, c->h, False);
+	arrange(c->mon);
 }
 
 void
-toggletag(unsigned int t) {
+toggletag(Client *c, unsigned int t) {
 	unsigned int newtags;
 
-	if(!selmon->sel)
+	if(!c)
 		return;
-	newtags = selmon->sel->tags ^ (t & TAGMASK);
-	selmon->sel->tags = newtags;
+	newtags = c->tags ^ (t & TAGMASK);
+	c->tags = newtags;
 	focus(NULL);
 	arrange(selmon);
 }
@@ -2161,8 +2134,19 @@ updatesizehints(Client *c) {
 
 void
 updatetitle(Client *c) {
+	XClassHint ch = { NULL, NULL };
+
+	if (c->class)
+		free(c->class);
+	if (c->instance)
+		free(c->instance);
+	XGetClassHint(dpy, c->win, &ch);
+	c->class = strdup(ch.res_class ? ch.res_class : broken);
+	c->instance = strdup(ch.res_name ? ch.res_name : broken);
+
 	if(!gettextprop(c->win, netatom[NetWMName], c->name, sizeof c->name))
 		gettextprop(c->win, XA_WM_NAME, c->name, sizeof c->name);
+
 	if(c->name[0] == '\0') /* hack to mark broken clients */
 		strlcpy(c->name, broken, sizeof(c->name));
 }
