@@ -26,11 +26,11 @@ extern char stext[256];
 extern int bh;
 extern Drw *drw;
 
-static int l_u_drawstatus(lua_State*);
 static int l_u_drw_setscheme(lua_State*);
 static int l_u_drw_text(lua_State*);
 static int l_u_drw_textw(lua_State*);
 static int l_u_keypress(lua_State*);
+static int l_u_status_draw(lua_State*);
 static int l_u_status_text(lua_State*);
 static int l_u_systray_width(lua_State*);
 
@@ -97,7 +97,7 @@ l_u_drw_setscheme(lua_State *L) {
 }
 
 static int
-l_u_drawstatus(lua_State *L) {
+l_u_status_draw(lua_State *L) {
 	if (lua_gettop(L) == 0) {
 		/* Return draw function, if any */
 		lua_pushliteral(L, "dwm-status-drawfn");
@@ -269,7 +269,7 @@ l_open_lib(lua_State *L) {
 
 	struct luaL_Reg statusfuncs[] = {
 		{ "text", l_u_status_text },
-		{ "draw", l_u_drawstatus },
+		{ "draw", l_u_status_draw },
 		{ NULL, NULL },
 	};
 
