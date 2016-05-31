@@ -108,3 +108,4 @@ based on suckless dwm 6.0 with these changes:
 * The status bar is exactly as high as required by the font
 * There are prototype bindings to Lua 5.3.
 * Some small cleanups around the code
+* Only one layout, which is tiling. Monocle and 'No layout' are gone.
