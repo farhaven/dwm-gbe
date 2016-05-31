@@ -839,7 +839,14 @@ drawbar(Monitor *m) {
 	xx = x;
 
 	if(m == selmon) { /* status is only drawn on selected monitor */
-		if (!l_have_status_drawfn()) {
+		/* If we have a Lua hook for drawing the status area, that's cool too.
+		 * API:
+		 * fn(x, m->ww, (m->sel != NULL)); returns x position of drawn text
+		 * negative values indicate errors
+		 */
+		int newx = l_call_status_drawfn(x, m->ww, m->sel != NULL);
+		if (newx == -1) {
+			/* Something went wrong */
 			w = TEXTW(stext);
 			x = m->ww - w;
 			if(showsystray)
@@ -849,16 +856,8 @@ drawbar(Monitor *m) {
 				w = m->ww - xx;
 			}
 			drw_text(drw, x, 0, w, bh, stext, false, false);
-		} else {
-			/* If we have a Lua hook for drawing the status area, that's cool too.
-			 * API:
-			 * fn(x, m->ww, (m->sel != NULL)); returns x position of drawn text
-			 * negative values indicate errors
-			 */
-			int newx = l_call_status_drawfn(x, m->ww, m->sel != NULL);
-			if (newx >= 0 && newx <= m->ww) {
-				x = newx;
-			}
+		} else if (newx >= 0 && newx <= m->ww) {
+			x = newx;
 		}
 	} else
 		x = m->ww;
