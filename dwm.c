@@ -420,7 +420,7 @@ arrange(Monitor *m) {
 
 void
 arrangemon(Monitor *m) {
-	unsigned int i, n, h, mw, my, ty;
+	int i, n, h, mw, my, ty;
 	Client *c;
 
 	for(n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
@@ -433,11 +433,11 @@ arrangemon(Monitor *m) {
 		mw = m->ww;
 	for(i = my = ty = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++)
 		if(i < m->nmaster) {
-			h = (m->wh - my) / (MIN(n, m->nmaster) - i);
+			h = MAX(1, (m->wh - my) / (MIN(n, m->nmaster) - i));
 			resize(c, m->wx, m->wy + my, mw - (2*c->bw), h - (2*c->bw), False);
 			my += HEIGHT(c);
 		} else {
-			h = (m->wh - ty) / (n - i);
+			h = MAX(1, (m->wh - ty) / (n - i));
 			resize(c, m->wx + mw, m->wy + ty, m->ww - mw - (2*c->bw), h - (2*c->bw), False);
 			ty += HEIGHT(c);
 		}
@@ -746,6 +746,9 @@ configurerequest(XEvent *e) {
 		wc.border_width = ev->border_width;
 		wc.sibling = ev->above;
 		wc.stack_mode = ev->detail;
+
+		wc.width = MAX(2 * ev->border_width + 1, wc.width);
+		wc.height = MAX(2 * ev->border_width + 1, wc.height);
 		XConfigureWindow(dpy, ev->window, ev->value_mask, &wc);
 	}
 	XSync(dpy, False);
@@ -1498,6 +1501,10 @@ resizeclient(Client *c, int x, int y, int w, int h) {
 	c->oldw = c->w; c->w = wc.width = w;
 	c->oldh = c->h; c->h = wc.height = h;
 	wc.border_width = c->bw;
+
+	wc.width = MAX(2 * c->bw + 1, wc.width);
+	wc.height = MAX(2 * c->bw + 1, wc.height);
+
 	XConfigureWindow(dpy, c->win, CWX|CWY|CWWidth|CWHeight|CWBorderWidth, &wc);
 	configure(c);
 	XSync(dpy, False);
