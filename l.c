@@ -357,15 +357,11 @@ l_u_keypress(lua_State *L) {
 		return luaL_error(L, "Can't allocate space for table key!");
 	}
 
-	fprintf(stderr, "Keypress register called, mod=0x%04x, sym=\"%s\", key=\"%s\"\n", modifiers, symname, key);
-
 	lua_pushstring(L, key);
 	lua_rotate(L, -3, -1); /* If ungrab is true, we've already got a nil on the stack */
 	lua_rawset(L, -3);
 
 	free(key);
-
-	fprintf(stderr, "top=%d\n", lua_gettop(L));
 
 	grabkey(modifiers, ksym, ungrab);
 

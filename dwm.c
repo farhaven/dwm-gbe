@@ -1106,7 +1106,6 @@ grabkey(int modifiers, KeySym ksym, int ungrab) {
 	KeyCode code;
 
 	if((code = XKeysymToKeycode(dpy, ksym))) {
-		fprintf(stderr, "Grabkeys: mod=%d code=%d\n", modifiers, code);
 		for(i = 0; i < LENGTH(mods); i++) {
 			if (ungrab) {
 				XUngrabKey(dpy, code, modifiers | mods[i], root);
