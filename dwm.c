@@ -1084,7 +1084,6 @@ grabkeys(void) {
 
 	updatenumlockmask();
 
-	XUngrabKey(dpy, AnyKey, AnyModifier, root);
 	for(i = 0; i < LENGTH(keys); i++) {
 		if((code = XKeysymToKeycode(dpy, keys[i].keysym))) {
 			for(j = 0; j < LENGTH(modifiers); j++) {
