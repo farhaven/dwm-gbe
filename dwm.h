@@ -42,9 +42,11 @@ struct Client {
 
 void grabkey(int, KeySym, int);
 
+void focusstack(int);
+void killclient(Client *);
 void tag(Client *, unsigned int);
+void togglefloating(Client *);
 void toggletag(Client *, unsigned int);
 void toggleview(unsigned int);
 void view(unsigned int);
-void togglefloating(Client *);
 #endif /* _DWM_H */

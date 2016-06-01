@@ -137,7 +137,7 @@ static void expose(XEvent *e);
 static void focus(Client *c);
 static void focusin(XEvent *e);
 static void focusmon(const Arg *arg);
-static void focusstack(const Arg *arg);
+void focusstack(int);
 static Atom getatomprop(Client *c, Atom prop);
 static Bool getrootptr(int *x, int *y);
 static long getstate(Window w);
@@ -145,7 +145,7 @@ static Bool gettextprop(Window w, Atom atom, char *text, unsigned int size);
 static void grabbuttons(Client *c, Bool focused);
 static void grabkeys(void);
 static void keypress(XEvent *e);
-static void killclient(const Arg *arg);
+void killclient(Client *);
 static void manage(Window w, XWindowAttributes *wa);
 static void mappingnotify(XEvent *e);
 static void maprequest(XEvent *e);
@@ -918,12 +918,12 @@ focusmon(const Arg *arg) {
 }
 
 void
-focusstack(const Arg *arg) {
+focusstack(int off) {
 	Client *c = NULL, *i;
 
 	if(!selmon->sel)
 		return;
-	if(arg->i > 0) {
+	if(off > 0) {
 		for(c = selmon->sel->next; c && !ISVISIBLE(c); c = c->next);
 		if(!c)
 			for(c = selmon->clients; c && !ISVISIBLE(c); c = c->next);
@@ -1126,17 +1126,17 @@ keypress(XEvent *e) {
 }
 
 void
-killclient(const Arg *arg) {
-	if(!selmon->sel)
+killclient(Client *c) {
+	if(!c)
 		return;
-	if(sendevent(selmon->sel->win, wmatom[WMDelete],
+	if(sendevent(c->win, wmatom[WMDelete],
 	             NoEventMask, wmatom[WMDelete], CurrentTime, 0 , 0, 0))
 		return;
 
 	XGrabServer(dpy);
 	XSetErrorHandler(xerrordummy);
 	XSetCloseDownMode(dpy, DestroyAll);
-	XKillClient(dpy, selmon->sel->win);
+	XKillClient(dpy, c->win);
 	XSync(dpy, False);
 	XSetErrorHandler(xerror);
 	XUngrabServer(dpy);

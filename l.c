@@ -27,6 +27,9 @@ extern int bh;
 extern Drw *drw;
 extern Monitor *selmon;
 
+static int l_u_client_current(lua_State*);
+static int l_u_client_focusstack(lua_State*);
+static int l_u_client_index(lua_State*);
 static int l_u_drw_setscheme(lua_State*);
 static int l_u_drw_text(lua_State*);
 static int l_u_drw_textw(lua_State*);
@@ -36,8 +39,6 @@ static int l_u_status_click(lua_State*);
 static int l_u_status_draw(lua_State*);
 static int l_u_status_text(lua_State*);
 static int l_u_systray_width(lua_State*);
-static int l_u_client_current(lua_State*);
-static int l_u_client_index(lua_State*);
 
 struct l_Client {
 	Client *c;
@@ -61,6 +62,13 @@ static int
 l_u_client_togglefloating(lua_State *L) {
 	struct l_Client *w = luaL_checkudata(L, 1, "dwm-client");
 	togglefloating(w->c);
+	return 0;
+}
+
+static int
+l_u_client_kill(lua_State *L) {
+	struct l_Client *w = luaL_checkudata(L, 1, "dwm-client");
+	killclient(w->c);
 	return 0;
 }
 
@@ -352,6 +360,7 @@ l_open_lib(lua_State *L) {
 
 	struct luaL_Reg clientfuncs_f[] = {
 		{ "current", l_u_client_current },
+		{ "focusstack", l_u_client_focusstack },
 		{ NULL, NULL },
 	};
 
@@ -599,7 +608,7 @@ static int
 l_u_client_index(lua_State *L) {
 	struct l_Client *w;
 	int prop;
-	const char *propnames[] = { "name", "class", "instance", "tag", "toggletag", "togglefloating", NULL };
+	const char *propnames[] = { "name", "class", "instance", "tag", "toggletag", "togglefloating", "kill", NULL };
 
 	w = luaL_checkudata(L, 1, "dwm-client");
 
@@ -623,6 +632,9 @@ l_u_client_index(lua_State *L) {
 		case 5:
 			lua_pushcfunction(L, l_u_client_togglefloating);
 			break;
+		case 6:
+			lua_pushcfunction(L, l_u_client_kill);
+			break;
 		default:
 			return luaL_error(L, "Unknown property requested!");
 	}
@@ -644,6 +656,13 @@ l_u_client_current(lua_State *L) {
 	}
 
 	return 1;
+}
+
+static int
+l_u_client_focusstack(lua_State *L) {
+	int off = luaL_checkinteger(L, 1);
+	focusstack(off);
+	return 0;
 }
 
 int
