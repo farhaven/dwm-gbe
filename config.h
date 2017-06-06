@@ -36,7 +36,6 @@ static Key keys[] = {
 	{ MODKEY | ShiftMask, XK_l,           l_loadconfig, {0} },
 	{ MODKEY | Mod1Mask,  XK_Right,       setmfact,   {.f = +0.01} },
 	{ MODKEY | Mod1Mask,  XK_Left,        setmfact,   {.f = -0.01} },
-	{ MODKEY,             XK_Left,        zoom,       {0} },
 	{ MODKEY,             XK_Right,       pushdown,   {0} },
 	{ MODKEY,             XK_space,       focusmon,   {.i = -1 } },
 	{ MODKEY | ShiftMask, XK_space,       tagmon,     {.i = -1 } },
@@ -49,7 +48,7 @@ static Key keys[] = {
 static Button buttons[] = {
 	/* click         event mask button   function        argument */
 	// { ClkWinTitle,   0,         Button1, focusstack,     {.i = -1} },
-	{ ClkWinTitle,   0,         Button2, zoom,           {0} },
+	// { ClkWinTitle,   0,         Button2, zoom,           {0} },
 	// { ClkWinTitle,   0,         Button3, focusstack,     {.i = 1 } },
 
 	{ ClkClientWin,  MODKEY,    Button1, movemouse,      {0} },

@@ -129,15 +129,12 @@ static Monitor *createmon(void);
 static void destroynotify(XEvent *e);
 static void detach(Client *c);
 static void detachstack(Client *c);
-static Monitor *dirtomon(int dir);
 static void drawbar(Monitor *m);
 static void drawbars(void);
 static void enternotify(XEvent *e);
 static void expose(XEvent *e);
 static void focus(Client *c);
 static void focusin(XEvent *e);
-static void focusmon(const Arg *arg);
-void focusstack(int);
 static Atom getatomprop(Client *c, Atom prop);
 static Bool getrootptr(int *x, int *y);
 static long getstate(Window w);
@@ -167,7 +164,6 @@ static void run(void);
 static void scan(void);
 static Bool sendevent(Window w, Atom proto, int m,
 		long d0, long d1, long d2, long d3, long d4);
-static void sendmon(Client *c, Monitor *m);
 static void setclientstate(Client *c, long state);
 static void setfocus(Client *c);
 static void setfullscreen(Client *c, Bool fullscreen);
@@ -203,7 +199,7 @@ static Client *wintosystrayicon(Window w);
 static int xerror(Display *dpy, XErrorEvent *ee);
 static int xerrordummy(Display *dpy, XErrorEvent *ee);
 static int xerrorstart(Display *dpy, XErrorEvent *ee);
-static void zoom(const Arg *arg);
+void zoom(Client *);
 
 /* variables */
 static Systray *systray = NULL;
@@ -268,7 +264,7 @@ applyrules(Client *c) {
 	c->class = strdup(class);
 	c->instance = strdup(instance);
 
-	l_call_newclient(c);
+	l_call_client_new(c);
 
 	if(ch.res_class)
 		XFree(ch.res_class);
@@ -1064,14 +1060,16 @@ grabkey(int modifiers, KeySym ksym, int ungrab) {
 
 	updatenumlockmask();
 
-	if((code = XKeysymToKeycode(dpy, ksym))) {
-		for(i = 0; i < LENGTH(mods); i++) {
-			if (ungrab) {
-				XUngrabKey(dpy, code, modifiers | mods[i], root);
-			} else {
-				XGrabKey(dpy, code, modifiers | mods[i], root,
-				         True, GrabModeAsync, GrabModeAsync);
-			}
+	if(!(code = XKeysymToKeycode(dpy, ksym))) {
+		return;
+	}
+
+	for(i = 0; i < LENGTH(mods); i++) {
+		if (ungrab) {
+			XUngrabKey(dpy, code, modifiers | mods[i], root);
+		} else {
+			XGrabKey(dpy, code, modifiers | mods[i], root,
+						True, GrabModeAsync, GrabModeAsync);
 		}
 	}
 }
@@ -2344,12 +2342,10 @@ xerrorstart(Display *dpy, XErrorEvent *ee) {
 }
 
 void
-zoom(const Arg *arg) {
-	Client *c = selmon->sel;
-
-	if(selmon->sel && selmon->sel->isfloating)
+zoom(Client *c) {
+	if(c && c->isfloating)
 		return;
-	if(c == nexttiled(selmon->clients))
+	if(c == nexttiled(c->mon->clients))
 		if(!c || !(c = nexttiled(c->next)))
 			return;
 	pop(c);

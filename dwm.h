@@ -40,13 +40,26 @@ struct Client {
 	Window win;
 };
 
+typedef union {
+	int i;
+	unsigned int ui;
+	float f;
+	const void *v;
+} Arg;
+
 void grabkey(int, KeySym, int);
 
+Monitor *dirtomon(int dir);
+void focusmon(const Arg *arg);
 void focusstack(int);
 void killclient(Client *);
+void sendmon(Client *c, Monitor *m);
 void tag(Client *, unsigned int);
 void togglefloating(Client *);
 void toggletag(Client *, unsigned int);
 void toggleview(unsigned int);
 void view(unsigned int);
+void zoom(Client *);
+
+unsigned int getsystraywidth();
 #endif /* _DWM_H */

@@ -23,7 +23,7 @@ LIBS += -L${X11LIB} -lX11 ${XINERAMALIBS} `pkg-config --libs xft`
 
 # flags
 CPPFLAGS = -D_BSD_SOURCE -D_POSIX_C_SOURCE=2 -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS}
-CFLAGS   = -g
+CFLAGS   = -g -O0
 CFLAGS   += -std=c99 -Wall -Werror -Wno-variadic-macros -Wno-deprecated-declarations ${INCS} ${CPPFLAGS}
 LDFLAGS  = -g ${LIBS}
 
