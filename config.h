@@ -21,7 +21,7 @@ static const Bool topbar           = True;     /* False means bottom bar */
 
 /* tagging */
 static const char *tags[] = {
-	"2:mail", "3:www", "4:term", "q:comm", "w:doc", "d", "e", "f:cal", "junk"
+	"2:mail", "3:www", "4:term", "q:comm", "w:doc", "d", "e", "f:edit", "g:cal", "junk"
 };
 
 /* layout */
