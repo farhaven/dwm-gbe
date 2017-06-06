@@ -4,7 +4,8 @@
 /* appearance */
 // static const char font[] = "Droid Sans Mono for Powerline 7.5";
 // static const char font[] = "Terminess Powerline 9";
-static const char font[] = "PragmataPro for Powerline:size=9";
+// static const char font[] = "PragmataPro for Powerline:size=9";
+static const char font[] = "GoMono for Powerline:size=9";
 static const char normbordercolor[] = "#ccc";
 static const char normbgcolor[]     = "#ccc";
 static const char normfgcolor[]     = "#000";
